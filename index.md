@@ -19,3 +19,4 @@ This lecture will be the introduction in networks and
 # Online material
 
 * Nice visualisation and network science introduction tutorial [dd](http://kateto.net/network-visualization)
+  
