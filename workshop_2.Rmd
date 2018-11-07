@@ -1,0 +1,58 @@
+---
+title: "Workshop_2"
+date: '`r Sys.Date()`'
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+    fig_caption: true
+link-citations: yes
+bibliography: Bibliography/Network Science Workshop 2018.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Network structures
+
+
+# Random graphs
+
+# The Barabasi-Albert model
+
+# Small-world network
+
+The concept of complexity
+
+# Robustness
+
+# Decompositions
+
+# Inferring biological networks
+
+Network represantation, deciphering biological interactions experimentally (e.g PPIs) and inferring networks using statistical methods always contain a lot of underlying assumptions. These assupmtions must be stated and meticulously examined in all levels of the analysis; starting from the experimental design until the network represantion of the system. 
+
+Is the biologist satisfied?
+
+How far is this network from reality, and why?
+
+
+## Gene expression
+
+## PPI
+
+Integrating genetic and protein–protein interaction networks maps a functional wiring diagram of a cell [@VanderSluis2018]
+
+## EEG
+
+# Assignments
+
+
+1. Comparing different grouping/clustering methods in networks
+2. Spreading processes
+3. 
+
+# References
