@@ -44,11 +44,12 @@ This lecture contains:
 
 ## Presentations
 
-1. Generalize assortativity for every centrality measure.
+1. Generalize assortativity for every centrality measure
 2. Compare network community detection methods
 3. Modularity vs Nestedness
 4. Centrality lethality
 5. Spreading phenomena
+6. Analysis of neural networks as networks
 
 
 # Online material
