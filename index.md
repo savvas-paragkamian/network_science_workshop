@@ -20,5 +20,11 @@ This lecture will be the introduction in networks analysis.
 
 # Online material
 
-* Nice visualisation and network science introduction tutorial [dd](http://kateto.net/network-visualization)
+* Nice network analysis and visualisation introduction tutorial [Katherine Ognyanova](http://kateto.net/network-visualization)
+* Brief introduction [Introduction to Network Analysis with R](https://www.jessesadler.com/post/network-analysis-with-r/)
+* Introduction to [Tidygraph](https://www.data-imaginist.com/2017/introducing-tidygraph/)
+* An awesome [list](https://github.com/briatte/awesome-network-analysis) of resources to construct, analyze and visualize network data
+* Experiments with [igraph](https://www.r-bloggers.com/experiments-with-igraph/)
+
+
   
