@@ -9,7 +9,7 @@ This workshop is taught by Christoforos Nikolaou and Savvas Paragkamian
 
 This lecture will be the introduction in networks analysis.
 
-[HTML](workshop_1.html) - [.Rmd](workshop_1.Rmd)
+[HTML](workshop_1.html) -- [Rmarkdown](workshop_1.Rmd)
 
 ## Lecture 2
 
