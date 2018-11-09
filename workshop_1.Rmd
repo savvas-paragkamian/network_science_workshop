@@ -610,7 +610,6 @@ c_elegans_tidy_graph <- c_elegans_tidy_graph %>% activate(nodes) %>% mutate(ecce
 2. Protein structure inference
 3. Centralities and global regulators
 4. Keystone species and food webs
-5. 
 
 ## From local to global
 

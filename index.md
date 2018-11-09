@@ -31,21 +31,24 @@ This lecture contains:
 * models for network creation (random, scale free, small world)
 * percolation theory - robustness
 * network inference from data
-* modeling spreading phenomena on networks
+* bipartite networks
+* dynamic systems on networks
 
 ## Lecture 3  : Biological network annotations 
 
 * gene ontology annotation
 * KEGG pathways annotation
 * reactome annotation
+* neural networks vs networks
+* state of the art in network science
 
 ## Presentations
 
-1. 
-2.
-3.
-4.
-5.
+1. Generalize assortativity for every centrality measure.
+2. Compare network community detection methods
+3. Modularity vs Nestedness
+4. Centrality lethality
+5. Spreading phenomena
 
 
 # Online material
