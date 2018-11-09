@@ -7,7 +7,9 @@ This workshop is taught by Christoforos Nikolaou and Savvas Paragkamian
 
 ## Lecture 1
 
-This lecture will be the introduction in networks and
+This lecture will be the introduction in networks analysis.
+
+[HTML](workshop_1.html)
 
 ## Lecture 2
 
