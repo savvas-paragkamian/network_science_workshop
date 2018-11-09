@@ -45,8 +45,8 @@ There are many packages for network analysis that have overlapping functionality
 # Packages
 packages_workspace <- c("rmarkdown","knitr", "citr")
 packages_data <- c("tidyverse")
-packages_networks <- c("igraph", "ggraph","tidygraph","RBGL", "bipartite")
-packages_gene_ontology_bioconductor <- c("AnnotationDbi","GO.db","topGO","Rgraphviz","GSEABase","RBGL")
+packages_networks <- c("igraph", "ggraph","tidygraph", "bipartite")
+packages_gene_ontology_bioconductor <- c("AnnotationDbi","RBGL","GO.db","topGO","Rgraphviz","GSEABase","RBGL")
 packages_KEGG_reactome <- c("KEGGgraph","KEGG.db","KEGGREST","reactome.db")
 packages_gene_annotation_bioconductor <- c("org.Dm.eg.db","org.Mm.eg.db","org.Sc.sgd.db") #http://genomicsclass.github.io/book/pages/annoCheat.html
 

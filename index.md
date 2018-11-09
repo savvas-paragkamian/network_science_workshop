@@ -24,7 +24,7 @@ This lecture contains:
 ## Lecture 3  : Biological network annotations 
 
 
-# Presentations
+## Presentations
 
 # Online material
 
@@ -33,6 +33,5 @@ This lecture contains:
 * Introduction to [Tidygraph](https://www.data-imaginist.com/2017/introducing-tidygraph/)
 * An awesome [list](https://github.com/briatte/awesome-network-analysis) of resources to construct, analyze and visualize network data
 * Experiments with [igraph](https://www.r-bloggers.com/experiments-with-igraph/)
-
 
   
