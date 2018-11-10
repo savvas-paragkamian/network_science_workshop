@@ -604,12 +604,17 @@ c_elegans_tidy_graph <- c_elegans_tidy_graph %>% activate(nodes) %>% mutate(ecce
 
 ```
 
+
 #### Centrality applications in biological networks
 
 1. Centrality - lethality rule
 2. Protein structure inference
 3. Centralities and global regulators
 4. Keystone species and food webs
+
+Identification of important nodes has been studied extensive in many diverse biological networks. This has led to the creation of many novel centralities specific to each type of networks.
+
+![Centralities periodic table](Images/periodic_table_centralities.png)
 
 ## From local to global
 

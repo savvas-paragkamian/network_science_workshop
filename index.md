@@ -32,7 +32,7 @@ This lecture contains:
 * percolation theory - robustness
 * network inference from data
 * bipartite networks
-* dynamic systems on networks
+* introduction to dynamic systems on networks
 
 ## Lecture 3  : Biological network annotations 
 
