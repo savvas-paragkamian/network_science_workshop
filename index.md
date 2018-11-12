@@ -44,7 +44,7 @@ This lecture contains:
 
 ## Presentations {#presentations}
 
-For the final examination of the course all students, individually or in groups of two, will present their analysis. They can choose a specific topic they are intersted in or choose from the list below.
+For the final examination of the course all students, individually or in groups of two, will present their assignments. They can choose a specific topic they are intersted in or choose from the list below. Students can present their assignments with slides or using markdown with their code. Duration of presentations will be 20 minutes.
 
 #### Structure
 
