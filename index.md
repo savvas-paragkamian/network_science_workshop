@@ -50,21 +50,21 @@ For the final examination of the course all students, individually or in groups 
 
 **Chapter 1** 
 
-Research question
-Why it is important?
-Who did what so far?  Review of literature.
-What remains to be done? Why the biologist is not satisfied?
+1. Research question.
+2. Why it is important?
+3. Who did what so far?  Review of literature.
+4. What remains to be done? Why the biologist is not satisfied?
 
 **Chapter 2**
 
-Methodology for addressing the problem
-Necessary theoretical concepts and results
+1. Methodology for addressing the problem
+2. Necessary theoretical concepts and results
 
 **Chapter 3**
 
-Data (origin, reliability, size)
-Computations Results 
-Mathematical meaning of the results 
+1. Data (origin, reliability, size)
+2. Computations Results 
+3. Mathematical meaning of the results 
 
 **Chapter 4**
 
@@ -72,7 +72,8 @@ Biological significance of the results
 
 **Chapter 5**
 
-Conclusions
+Conclusions:
+
 	1. Mathematical comparison with available results (what is new)
 	2. Biological comparison with available results (what is new)
 	3. General comparison with available results (what is new)
