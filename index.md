@@ -11,7 +11,7 @@ The course contains 3 lectures and one last meeting for student presentations.
 1. Thursday 29/11 14:00-17:00 : [Lecture 1](workshop_1.html)
 2. Tuesday 4/12 15:00-18:00 : Lecture 2
 3. Thursday 6/12 14:00-17:00 : Lecture 3
-4. Tuesday 11/12 14:00-17:00 : Presentations
+4. Tuesday 11/12 14:00-17:00 : [Presentations](#presentations)
 
 ## [Lecture 1](workshop_1.html) : Network descriptives
 
@@ -42,7 +42,7 @@ This lecture contains:
 * neural networks vs networks
 * state of the art in network science
 
-## Presentations
+## Presentations {#presentations}
 
 For the final examination of the course all students, individually or in groups of two, will present their analysis. They can choose a specific topic they are intersted in or choose from the list below.
 
