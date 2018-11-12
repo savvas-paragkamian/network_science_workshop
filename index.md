@@ -2,7 +2,7 @@
 
 Fall of 2018, [Bioinformatics MSc Program](https://bioinfo-grad.gr), University of Crete
 
-This workshop is taught by Christoforos Nikolaou and Savvas Paragkamian.
+This workshop is taught by Christoforos Nikolaou and Savvas Paragkamian from [CG^2 Lab](https://computational-genomics-uoc.weebly.com).
 
 #### Schedule:
 
@@ -50,9 +50,9 @@ For the final examination of the course all students, individually or in groups 
 
 **Chapter 1** 
 
-1. Research question.
+1. Research question
 2. Why it is important?
-3. Who did what so far?  Review of literature.
+3. Who did what so far?  Review of literature
 4. What remains to be done? Why the biologist is not satisfied?
 
 **Chapter 2**
@@ -74,10 +74,10 @@ Biological significance of the results
 
 Conclusions:
 
-	1. Mathematical comparison with available results (what is new)
-	2. Biological comparison with available results (what is new)
-	3. General comparison with available results (what is new)
-	4. Perspectives for future work 
+1. Mathematical comparison with available results (what is new)
+2. Biological comparison with available results (what is new)
+3. General comparison with available results (what is new)
+4. Perspectives for future work 
 
 
 #### Featured topics 
