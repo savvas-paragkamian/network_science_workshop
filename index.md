@@ -6,14 +6,19 @@ This workshop is taught by Christoforos Nikolaou and Savvas Paragkamian from [CG
 
 #### Schedule:
 
-The course contains 3 lectures and one last meeting for student presentations.
+The course contains 4 lectures and one last meeting for student presentations.
 
-1. Thursday 29/11 14:00-17:00 : [Lecture 1](workshop_1.html)
-2. Tuesday 4/12 15:00-18:00 : Lecture 2
-3. Thursday 6/12 14:00-17:00 : Lecture 3
-4. Tuesday 11/12 14:00-17:00 : [Presentations](#presentations)
+1. Thursday 29/11 14:00-17:00 : Lecture 1
+2. Tuesday 4/12 15:00-18:00 : [Lecture 2](workshop_1.html)
+3. Wednesday 5/12 15:00-18:00 : Lecture 3
+4. Thursday 6/12 14:00-17:00 : Lecture 4
+5. Tuesday 11/12 14:00-17:00 : [Presentations](#presentations)
 
-## [Lecture 1](workshop_1.html) : Network descriptives
+## Lecture 1
+
+Introduction to Network Science
+
+## [Lecture 2](workshop_1.html) : Network descriptives
 
 This lecture contains: 
 
@@ -26,14 +31,14 @@ This lecture contains:
 
 [HTML](workshop_1.html) -- [Rmarkdown file](workshop_1.Rmd)
 
-## Lecture 2 : Network construction from Models and Data
+## Lecture 3 : Network construction from Models and Data
 
 * models for network creation (random, scale free, small world)
 * percolation theory - robustness
 * network inference from data
 * introduction to dynamic systems on networks
 
-## Lecture 3  : Biological network annotations 
+## Lecture 4  : Biological network annotations 
 
 * gene ontology annotation
 * bipartite networks
