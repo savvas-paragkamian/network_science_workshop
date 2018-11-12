@@ -2,7 +2,7 @@
 
 Fall of 2018, [Bioinformatics MSc Program](https://bioinfo-grad.gr), University of Crete
 
-This workshop is taught by Christoforos Nikolaou and Savvas Paragkamian from [CG^2 Lab](https://computational-genomics-uoc.weebly.com).
+This workshop is taught by Christoforos Nikolaou and Savvas Paragkamian from [CG<sup>2</sup> Lab](https://computational-genomics-uoc.weebly.com).
 
 #### Schedule:
 
