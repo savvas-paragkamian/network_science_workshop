@@ -110,6 +110,7 @@ We consider a directed, simple network $G(V,E)$ with a set of $N$ nodes $V$ and 
 1. Nodes belong to the same variable
 2. Edges belong to the same variable
 3. Edges connect two nodes, **binary relation**
+4. Nodes and edges are time-independent
 
 Graphs are the mathematical - abstract representation of networks. Networks can be considered as graphs where nodes and edges are derived from data.
 
@@ -614,7 +615,7 @@ c_elegans_tidy_graph <- c_elegans_tidy_graph %>% activate(nodes) %>% mutate(ecce
 
 Identification of important nodes has been studied extensive in many diverse biological networks. This has led to the creation of many novel centralities specific to each type of networks.
 
-![Centralities periodic table](Images/periodic_table_centralities.png)
+![Centralities [periodic table](http://www.schochastics.net/sna/periodic.html)](Images/periodic_table_centralities.png)
 
 ## From local to global
 
