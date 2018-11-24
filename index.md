@@ -87,7 +87,7 @@ Conclusions:
 
 #### Featured topics 
 
-1. Generalize assortativity for every centrality measure
+1. Generalize assortativity for every centrality measure and redefine it using information theory
 2. Compare network community detection methods
 3. Modularity vs Nestedness
 4. Centrality lethality

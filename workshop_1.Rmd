@@ -786,7 +786,7 @@ Are the centrality measures correlated?
 
 ## Emergence of scaling in random networks
 
-Breakthrough of network science came after the paper [Emergence of scaling in random networks](http://barabasi.com/f/67.pdf) [@Barabasi1999a] published in 1999, which now has over **32000 citations**, and the [Diameter of the World-Wide Web](http://barabasi.com/f/65.pdf) [@Barabasi1999c].
+Breakthrough of network science came after the paper [Emergence of scaling in random networks](http://barabasi.com/f/67.pdf) [@Barabasi1999a] published in 1999, which now has over **19000 citations**, and the [Diameter of the World-Wide Web](http://barabasi.com/f/65.pdf) [@Barabasi1999c].
 
 > Traditionally, networks of complex topol- ogy have been described with the random graph theory of Erdos and Renyi (ER), but in the absence of data on large networks, the predictions of the ER theory were rarely tested in the real world. However, driven by the computerization of data acquisition, such topological information is increasingly avail- able, raising the possibility of understanding the dynamical and topological stability of large networks.
 
