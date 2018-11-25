@@ -15,7 +15,7 @@ bibliography: Bibliography/Network Science Workshop 2018.bib
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, eval=FALSE}
 # Previous packages
 
 packages_workspace <- c("rmarkdown","knitr", "citr")
@@ -54,7 +54,6 @@ packages_Lab_load <- lapply(packages_Lab,library,character.only=TRUE)
 
 # Gene ontology annotation
 
-
 Bioconductor has packages in R that do Gene Ontology annotation in genes of many organisms with different types of database IDs. 
 
 ## Singular enrichment analysis
@@ -66,4 +65,83 @@ All these test share the same assumption for the null hypothesis, that the proba
 [Nice explanation to the biases of gene ontology](http://khughitt.github.io/slidify-annotation_enrichment_analysis/#1)
 
 
+```{r, message=FALSE, warning=FALSE}
+Escherichia_coli_biogrid <- read.delim(file = "Data/BIOGRID-ORGANISM-Escherichia_coli_K12_W3110-3.5.165.mitab.txt",sep = "\t",header = T)
+
+Escherichia_coli_biogrid_ok <- Escherichia_coli_biogrid %>% mutate(InteractorA_entrez=gsub("(.*):(.*)","\\2",X.ID.Interactor.A), InteractorB_entrez=gsub("(.*):(.*)","\\2",ID.Interactor.B))
+
+```
+
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+
+
+#### The data and the preparation necessary to load to topGO object.
+#universe_dros_net_entrez  # Gene Universe
+
+#essential_dros_net_entrez # genes of interest
+
+# then make a factor that is 1 if the probeset is "interesting" and 0 otherwise
+geneList_dros <- as.integer(universe_dros_net_entrez %in% essential_dros_net_entrez)
+# name the factor with the probeset names
+names(geneList_dros) <- universe_dros_net_entrez
+
+# Make the topGO object with the data
+sampleGOdata <- new("topGOdata", description = "Simple session", ontology = "BP", allGenes = as.factor(geneList_dros), nodeSize = 5,annot = annFUN.org, mapping="org.Dm.eg.db", ID="entrez")
+
+# Run the tests
+resultFisher <- runTest(sampleGOdata, algorithm = "classic", statistic = "fisher") # the p-values are not adjusted!!!!
+
+ss <- resultFisher@score[resultFisher@score<0.01]
+#resultKS <- runTest(sampleGOdata, algorithm = "classic", statistic = "ks")
+#resultKS.elim <- runTest(sampleGOdata, algorithm = "elim", statistic = "ks")
+
+############################################# Analysis of results #####################################################
+
+# Dataframe with top GO
+allRes <- GenTable(sampleGOdata, classicFisher = resultFisher, ranksOf = "classicFisher", orderBy = "classicFisher",topNodes = length(resultFisher@score))
+allRes$classicFisher <- as.numeric(allRes$classicFisher)
+
+allRes$classicFisher <- with(allRes,ifelse(is.na(classicFisher),0,classicFisher))
+p <- as.numeric(allRes$classicFisher)
+
+allRes$p_adjust_FDR <- p.adjust(p,method ="fdr",n = length(p))
+allRes$p_adjust_Bonferroni <- p.adjust(p,method ="bonferroni",n = length(p))
+
+
+write.table(x = allRes, file = "../Thesis_Essentiality_Drosophila_Signed_Network/Data/biological_process_enrichment_termFisher.csv", sep = ",", col.names = TRUE,row.names = FALSE)
+
+
+allRes_001_sig <- allRes[as.numeric(allRes$classicFisher)<0.01,]
+
+# pValue.classic <- score(resultFisher)
+# pValue.elim <- score(resultKS.elim)[names(pValue.classic)]
+# gstat <- termStat(sampleGOdata, names(pValue.classic))
+# gSize <- gstat$Annotated / max(gstat$Annotated) * 4
+# 
+# # function for building color map for plotting
+# colMap <- function(x) {
+#   .col <- rep(rev(heat.colors(length(unique(x)))), time = table(x))
+#   return(.col[match(1:length(x), order(x))])}
+#   
+# gCol <- colMap(gstat$Significant)
+# # Plot the p values of the different algorithms classic and elim
+# plot(pValue.classic, pValue.elim, xlab = "p-value classic", ylab = "p-value elim", pch = 19, cex = gSize, col = gCol)
+# sel.go <- names(pValue.classic)[pValue.elim < pValue.classic]
+# cbind(termStat(sampleGOdata, sel.go),elim = pValue.elim[sel.go],classic = pValue.classic[sel.go])
+
+####################################### Plot GO graph #########################################
+
+graph_GO_essential_strongly <- showSigOfNodes(sampleGOdata, score(resultFisher), firstSigNodes = 53, useInfo = 'all')
+# it induces the GO graph with the quered IDs. 
+graph_GO_essential_strongly
+
+printGraph(sampleGOdata, resultFisher, firstSigNodes = 53, useInfo = 'all',fn.prefix = "graph_GO_essential_strongly", pdfSW = TRUE)
+
+graph_GO_essential_strongly_igraph <- graph_from_graphnel(graph_GO_essential_strongly$dag, name = TRUE, weight = TRUE,
+  unlist.attrs = TRUE)
+```
+
+
+# References
 

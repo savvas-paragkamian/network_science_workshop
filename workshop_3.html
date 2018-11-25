@@ -277,8 +277,16 @@ packages_Lab_load &lt;- lapply(packages_Lab,library,character.only=TRUE)</code><
 <div id="singular-enrichment-analysis" class="section level2">
 <h2>Singular enrichment analysis</h2>
 <p>In order to examine which gene ontology terms are overrepresented in the genes of our network we have to do a statistic test. Most commonly used tests is the Fisher’s exact test, the chi square test and the binomial test. We will use the Fisher’ s exact test for the Biological Process component of Gene Ontology.</p>
-<p>All these test share the same assumption for the null hypothesis, that the probabilities for the selection of each gene are equal <span class="citation">(<span class="citeproc-not-found" data-reference-id="Rivals2007"><strong>???</strong></span>)</span>. But it turns out that thay are not because the structure of gene ontology bipartite network of genes and gene terms has a heavy tail distribution and hence these tests are biased to high degree terms <span class="citation">(<span class="citeproc-not-found" data-reference-id="Glass2014"><strong>???</strong></span>)</span>.</p>
-<p><a href="http://khughitt.github.io/slidify-annotation_enrichment_analysis/#1">Nice introduction</a></p>
+<p>All these test share the same assumption for the null hypothesis, that the probabilities for the selection of each gene are equal <span class="citation">(Rivals et al. <a href="#ref-Rivals2007">2007</a>)</span>. But it turns out that thay are not because the structure of gene ontology bipartite network of genes and gene terms has a heavy tail distribution and hence these tests are biased to high degree terms <span class="citation">(Glass and Girvan <a href="#ref-Glass2014">2014</a>)</span>.</p>
+<p><a href="http://khughitt.github.io/slidify-annotation_enrichment_analysis/#1">Nice explanation to the biases of gene ontology</a></p>
+<div id="refs" class="references">
+<div id="ref-Glass2014">
+<p>Glass, Kimberly, and Michelle Girvan. 2014. “Annotation enrichment analysis: an alternative method for evaluating the functional properties of gene sets.” <em>Sci. Rep.</em> 4: 4191. doi:<a href="https://doi.org/10.1038/srep04191">10.1038/srep04191</a>.</p>
+</div>
+<div id="ref-Rivals2007">
+<p>Rivals, Isabelle, Léon Personnaz, Lieng Taing, and Marie Claude Potier. 2007. “Enrichment or depletion of a GO category within a class of genes: Which test?” <em>Bioinformatics</em> 23 (4): 401–7. doi:<a href="https://doi.org/10.1093/bioinformatics/btl633">10.1093/bioinformatics/btl633</a>.</p>
+</div>
+</div>
 </div>
 </div>
 
