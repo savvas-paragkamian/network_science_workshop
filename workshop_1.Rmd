@@ -46,7 +46,7 @@ There are many packages for network analysis that have overlapping functionality
 packages_workspace <- c("rmarkdown","knitr", "citr")
 packages_data <- c("tidyverse")
 packages_networks <- c("igraph", "ggraph","tidygraph", "bipartite")
-packages_gene_ontology_bioconductor <- c("AnnotationDbi","RBGL","GO.db","topGO","Rgraphviz","GSEABase","RBGL")
+packages_gene_ontology_bioconductor <- c("AnnotationDbi","RBGL","GO.db","topGO","Rgraphviz","GSEABase")
 packages_KEGG_reactome <- c("KEGGgraph","KEGG.db","KEGGREST","reactome.db")
 packages_gene_annotation_bioconductor <- c("org.Dm.eg.db","org.Mm.eg.db","org.Sc.sgd.db") #http://genomicsclass.github.io/book/pages/annoCheat.html
 
@@ -198,23 +198,23 @@ There are many databases with real biological networks.
 
 ```{r}
 
-Saccharomyces_cerevisiae_biogrid <- read.delim(file = "Data/BIOGRID-ORGANISM-Saccharomyces_cerevisiae_S288c-3.5.166.mitab.txt",sep = "\t",header = T)
+Escherichia_coli_biogrid <- read.delim(file = "Data/BIOGRID-ORGANISM-Escherichia_coli_K12_W3110-3.5.165.mitab.txt",sep = "\t",header = T)
 
-colnames(Saccharomyces_cerevisiae_biogrid)
+colnames(Escherichia_coli_biogrid)
 
 ```
 
 ```{r}
-Saccharomyces_cerevisiae_biogrid_interaction <- Saccharomyces_cerevisiae_biogrid %>% group_by(Interaction.Types,Interaction.Detection.Method) %>% summarise(total_interactions=n())
+Escherichia_coli_biogrid_interaction <- Escherichia_coli_biogrid %>% group_by(Interaction.Types,Interaction.Detection.Method) %>% summarise(total_interactions=n())
 
-kable(Saccharomyces_cerevisiae_biogrid_interaction,caption = "Types of interactions of yeast from BioGRID")
+kable(Escherichia_coli_biogrid_interaction,caption = "Types of interactions of Escherichia coli from BioGRID")
 ```
 
 
 ```{r}
-Saccharomyces_cerevisiae_biogrid_physical_association <- Saccharomyces_cerevisiae_biogrid %>% filter(Interaction.Types %in% c("psi-mi:MI:0407(direct interaction)","psi-mi:MI:0915(physical association)"))
+Escherichia_coli_biogrid_physical_association <- Escherichia_coli_biogrid %>% filter(Interaction.Types %in% c("psi-mi:MI:0407(direct interaction)","psi-mi:MI:0915(physical association)"))
 
-Saccharomyces_cerevisiae_biogrid_PPI_net <- Saccharomyces_cerevisiae_biogrid_physical_association %>% dplyr::select(Alt.IDs.Interactor.A,Alt.IDs.Interactor.B) %>% as_tbl_graph(.,directed = FALSE)
+Escherichia_coli_biogrid_PPI_net <- Escherichia_coli_biogrid_physical_association %>% dplyr::select(Alt.IDs.Interactor.A,Alt.IDs.Interactor.B) %>% as_tbl_graph(.,directed = FALSE)
 
 ```
 
@@ -226,7 +226,7 @@ Genetic interactions [@Boucher2013a]
 see [@Boone2007a] for a nice review. 
 
 ```{r}
-Saccharomyces_cerevisiae_biogrid_genetic <- Saccharomyces_cerevisiae_biogrid %>% filter(Interaction.Types %in% c("psi-mi:MI:0794(synthetic genetic interaction defined by inequality)","psi-mi:MI:0796(suppressive genetic interaction defined by inequality)","psi-mi:MI:0799(additive genetic interaction defined by inequality)"))
+Escherichia_coli_biogrid_genetic <- Escherichia_coli_biogrid %>% filter(Interaction.Types %in% c("psi-mi:MI:0794(synthetic genetic interaction defined by inequality)","psi-mi:MI:0796(suppressive genetic interaction defined by inequality)","psi-mi:MI:0799(additive genetic interaction defined by inequality)"))
 
 ```
 
@@ -659,7 +659,13 @@ where $(C_{A}(n^*)$ is the maximum observed value of the centrality, $C_{A}(n_i)
 > The index will always be between 0 and 1. CA equals 0 when all actors have exactly the same centrality index, and equals 1 if one actor, "completely dominates or overshadows" the other actors.
 
 ```{r}
+
+#degree centralization
 centr_degree(c_elegans_net)$centralization
+
+# betweenness centralization
+centr_betw(c_elegans_net, directed = TRUE)$centralization
+
 
 ```
 
@@ -731,17 +737,17 @@ ggplot()+
 ```
 
 
-#### Degree distribution of yeast PPI
+#### Degree distribution of Escherichia_coli PPI
 
 ```{r}
-Saccharomyces_cerevisiae_biogrid_PPI_net_df <- Saccharomyces_cerevisiae_biogrid_PPI_net %>% morph(to_simple) %>% activate(nodes) %>% mutate(degree=centrality_degree(),betweenness=centrality_betweenness(directed = F)) %>% unmorph() %>% as.tibble() 
+Escherichia_coli_biogrid_PPI_net_df <- Escherichia_coli_biogrid_PPI_net %>% morph(to_simple) %>% activate(nodes) %>% mutate(degree=centrality_degree(),betweenness=centrality_betweenness(directed = F)) %>% unmorph() %>% as.tibble() 
 
 
-Saccharomyces_cerevisiae_biogrid_PPI_net_degree_dist <- Saccharomyces_cerevisiae_biogrid_PPI_net_df %>% group_by(degree) %>% summarise(n_nodes=n())
+Escherichia_coli_biogrid_PPI_net_degree_dist <- Escherichia_coli_biogrid_PPI_net_df %>% group_by(degree) %>% summarise(n_nodes=n())
 
 
 ggplot()+
-  geom_point(data = Saccharomyces_cerevisiae_biogrid_PPI_net_degree_dist,aes(x=degree,y=n_nodes), color="coral2",show.legend = F)+
+  geom_point(data = Escherichia_coli_biogrid_PPI_net_degree_dist,aes(x=degree,y=n_nodes), color="coral2",show.legend = F)+
   ggtitle("Degree distribution")+
   labs(x="Degree", y= "Number of proteins")+
   #scale_y_continuous(breaks = seq(0,20,5),limits = c(0,20))+
@@ -750,7 +756,7 @@ ggplot()+
   theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank())
 
 ggplot()+
-  geom_point(data = Saccharomyces_cerevisiae_biogrid_PPI_net_degree_dist,aes(x=log(degree),y=log(n_nodes)), color="coral2",show.legend = F)+
+  geom_point(data = Escherichia_coli_biogrid_PPI_net_degree_dist,aes(x=log(degree),y=log(n_nodes)), color="coral2",show.legend = F)+
   ggtitle("Degree distribution")+
   labs(x="log(Degree)", y= "log(Number of proteins)")+
   #scale_y_continuous(breaks = seq(0,20,5),limits = c(0,20))+
@@ -774,8 +780,8 @@ ggplot()+
   theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank())
 
 ggplot()+
-  geom_point(data = Saccharomyces_cerevisiae_biogrid_PPI_net_df,aes(x=degree,y=betweenness), color="slateblue2",show.legend = F)+
-  ggtitle("Degree - Betweenness yeast PPI")+
+  geom_point(data = Escherichia_coli_biogrid_PPI_net_df,aes(x=degree,y=betweenness), color="slateblue2",show.legend = F)+
+  ggtitle("Degree - Betweenness Escherichia_coli PPI")+
   labs(x="Degree", y= "Betweenness")+
   theme_bw()+
   theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank())
@@ -792,7 +798,7 @@ Breakthrough of network science came after the paper [Emergence of scaling in ra
 
 #### Scale-free
 
-The degree distribution of the yeast PPI is **scale free** because both x and y variables range across 2-3 orders of magnitude. Also it has a heavy tail. 
+The degree distribution of the Escherichia_coli PPI is **scale free** because both x and y variables range across 2-3 orders of magnitude. Also it has a heavy tail. 
 
 From the very important paper of Stumpf and Porter [@Stumpf2012]. Stumpf often criticizes scientific trends with scientific integrity.
 

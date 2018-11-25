@@ -31,6 +31,10 @@ The concept of complexity
 
 # Decompositions
 
+## Strong connected
+
+## K-core
+
 # Inferring biological networks
 
 Network represantation, deciphering biological interactions experimentally (e.g PPIs) and inferring networks using statistical methods always contain a lot of underlying assumptions. These assupmtions must be stated and meticulously examined in all levels of the analysis; starting from the experimental design until the network represantion of the system. 
@@ -40,13 +44,15 @@ Is the biologist satisfied?
 How far is this network from reality, and why?
 
 
-## Gene expression
+## Gene expression microarrays
 
 ## PPI
 
 Integrating genetic and protein–protein interaction networks maps a functional wiring diagram of a cell [@VanderSluis2018]
 
 ## EEG
+
+
 
 # Assignments
 
