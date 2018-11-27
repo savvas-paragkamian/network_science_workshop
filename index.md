@@ -8,7 +8,7 @@ This workshop is taught by Christoforos Nikolaou and Savvas Paragkamian from [CG
 
 The course contains 4 lectures and one last meeting for student presentations.
 
-1. Thursday 29/11 14:00-17:00 : Lecture 1
+1. Thursday 29/11 14:00-17:00 : [Lecture 1](workshop_0.html)
 2. Tuesday 4/12 15:00-18:00 : [Lecture 2](workshop_1.html)
 3. Wednesday 5/12 15:00-18:00 : Lecture 3
 4. Thursday 6/12 14:00-17:00 : Lecture 4

@@ -52,12 +52,15 @@ packages_Lab_load <- lapply(packages_Lab,library,character.only=TRUE)
 
 # Gene Ontology
 
-In large scale analyses genes and/or proteins are used as statistical objects. This approach can be enriched with existing knowledge for each gene-protein in order to obtain more insightful and biologicaly relevant results. This is a way of combining knowledge from single gene/protein genetic and biochemical research with the holistic approach of big data.
+In large scale analyses genes and/or proteins are used as statistical objects. This approach can be enriched with existing knowledge for each gene-protein in order to obtain more insightful and biologicaly relevant results. This is a way of combining knowledge from single gene/protein genetic and biochemical research with the holistic approach of big data. This unification is facilitated by Gene Ontology [@Ashburner2000c]. 
+
+## What are ontologies
 
 
-What are ontologies
 
-Gene ontology content
+## Gene ontology content
+
+Gene
 
 Structure
 
@@ -74,7 +77,7 @@ BP_children_tidy_df <- data.frame(GO.type.relation=names(BP_children_tidy),relat
 
 ```
 
-Relationships
+## Relationships
 
 * is a
 * part of
