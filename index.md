@@ -90,9 +90,11 @@ Conclusions:
 1. Generalize assortativity for every centrality measure and redefine it using information theory
 2. Compare network community detection methods
 3. Modularity vs Nestedness
-4. Centrality lethality
+4. Centrality lethality rule using Gene Ontology centralities
 5. Spreading phenomena
 6. Analysis of neural networks as networks
+7. Multiplex networks robustness
+8. Network analysis of gene ontology as bipartite, as association networks based on terms from real data annotation
 
 
 # Online material

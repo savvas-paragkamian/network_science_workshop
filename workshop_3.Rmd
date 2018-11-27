@@ -16,16 +16,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r, message=FALSE, warning=FALSE, eval=FALSE}
-# Previous packages
-
-packages_workspace <- c("rmarkdown","knitr", "citr")
-packages_data <- c("tidyverse")
-packages_networks <- c("igraph", "ggraph","tidygraph", "bipartite")
-
-# Annotation packages
-
-packages_gene_ontology_bioconductor <- c("AnnotationDbi","RBGL","GO.db","topGO","Rgraphviz","GSEABase")
-
 
 check.packages_bioconductor <- function(pkg){
     new.pkg <- pkg[!(pkg %in%library()[]$result[,1])]
@@ -44,7 +34,15 @@ check_installation_bio <- check.packages_bioconductor(packages_gene_ontology_bio
 
 ```{r, message=FALSE, warning=FALSE}
 # load packages
+# Previous packages
 
+packages_workspace <- c("rmarkdown","knitr", "citr")
+packages_data <- c("tidyverse")
+packages_networks <- c("igraph", "ggraph","tidygraph", "bipartite")
+
+# Annotation packages
+
+packages_gene_ontology_bioconductor <- c("AnnotationDbi","RBGL","GO.db","topGO","Rgraphviz","GSEABase")
 
 packages_Lab <- c(packages_workspace,packages_data,packages_networks,packages_gene_ontology_bioconductor)
 
@@ -52,42 +50,102 @@ packages_Lab_load <- lapply(packages_Lab,library,character.only=TRUE)
 ```
 
 
-# Gene ontology annotation
+# Gene Ontology
 
-Bioconductor has packages in R that do Gene Ontology annotation in genes of many organisms with different types of database IDs. 
+In large scale analyses genes and/or proteins are used as statistical objects. This approach can be enriched with existing knowledge for each gene-protein in order to obtain more insightful and biologicaly relevant results. This is a way of combining knowledge from single gene/protein genetic and biochemical research with the holistic approach of big data.
+
+
+What are ontologies
+
+Gene ontology content
+
+Structure
+
+```{r}
+BP_children <- as.list(GOBPCHILDREN)
+BP_children <- BP_children[!is.na(BP_children)]
+
+
+BP_children_tidy <- unlist(BP_children)
+
+# the Biological process network
+BP_children_tidy_df <- data.frame(GO.type.relation=names(BP_children_tidy),relation_GO=BP_children_tidy) %>% mutate(type.relation=gsub("(.*)\\.(.*)","\\2",GO.type.relation), GO.term=gsub("(.*)\\.(.*)","\\1",GO.type.relation)) # %>% mutate(Term=sapply(X = GO.term, FUN = Term))
+
+
+```
+
+Relationships
+
+* is a
+* part of
+* has part
+* regulates
+* positevely regulates
+
+As a tool
+
+## Gene ontology annotation in r
+
+Bioconductor has packages in R that do Gene Ontology annotation in genes of many organisms with different types of database IDs. For detailed tutorials look [@Sinha2014].
+
+```{r, message=FALSE, warning=FALSE}
+
+# data from Biogrid
+Escherichia_coli_biogrid <- read.delim(file = "Data/BIOGRID-ORGANISM-Escherichia_coli_K12_MG1655-3.5.166.mitab.txt",sep = "\t",header = T) %>% mutate(InteractorA_entrez=gsub("(.*):(.*)","\\2",X.ID.Interactor.A), InteractorB_entrez=gsub("(.*):(.*)","\\2",ID.Interactor.B))
+
+Escherichia_coli_biogrid_proteins <- as.character(unique(c(Escherichia_coli_biogrid$InteractorA_entrez,Escherichia_coli_biogrid$InteractorB_entrez))) # gene universe
+
+Escherichia_coli_biogrid_physical_association <- Escherichia_coli_biogrid %>% filter(Interaction.Types %in% c("psi-mi:MI:0407(direct interaction)","psi-mi:MI:0915(physical association)"))
+
+Escherichia_coli_biogrid_physical_association_proteins <- as.character(unique(c(Escherichia_coli_biogrid_physical_association$InteractorA_entrez,Escherichia_coli_biogrid_physical_association$InteractorB_entrez))) # genes of interest
+
+
+```
+
+## Identifiers with AnnotationDPi
+
+Organism specific.
+
+```{r, message=FALSE, warning=FALSE,eval=FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("org.EcK12.eg.db", version = "3.8")
+```
+
+
+```{r, message=FALSE, warning=FALSE}
+library(org.EcK12.eg.db)
+
+my_map <- org.EcK12.eg.db
+
+columns(org.EcK12.eg.db)
+keys_entrez <- keys(org.EcK12.eg.db,keytype = "ENTREZID")
+
+Escherichia_coli_ENTREZID_symbol <- AnnotationDbi::select(org.EcK12.eg.db, keys=keys_entrez, columns = c("ENTREZID","SYMBOL")) %>% mutate(PPI= ENTREZID %in% Escherichia_coli_biogrid_physical_association_proteins)
+
+```
 
 ## Singular enrichment analysis
 
 In order to examine which gene ontology terms are overrepresented in the genes of our network we have to do a statistic test. Most commonly used tests is the Fisher's exact test, the chi square test and the binomial test. We will use the Fisher' s exact test for the Biological Process component of Gene Ontology.
 
-All these test share the same assumption for the null hypothesis, that the probabilities for the selection of each gene are equal [@Rivals2007]. But it turns out that thay are not because the structure of gene ontology bipartite network of genes and gene terms has a heavy tail distribution and hence these tests are biased to high degree terms [@Glass2014]. 
-
-[Nice explanation to the biases of gene ontology](http://khughitt.github.io/slidify-annotation_enrichment_analysis/#1)
-
-
-```{r, message=FALSE, warning=FALSE}
-Escherichia_coli_biogrid <- read.delim(file = "Data/BIOGRID-ORGANISM-Escherichia_coli_K12_W3110-3.5.165.mitab.txt",sep = "\t",header = T)
-
-Escherichia_coli_biogrid_ok <- Escherichia_coli_biogrid %>% mutate(InteractorA_entrez=gsub("(.*):(.*)","\\2",X.ID.Interactor.A), InteractorB_entrez=gsub("(.*):(.*)","\\2",ID.Interactor.B))
-
-```
-
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
 
-
 #### The data and the preparation necessary to load to topGO object.
-#universe_dros_net_entrez  # Gene Universe
+#  # Gene Universe
 
-#essential_dros_net_entrez # genes of interest
+mySymbols <- unlist(mget(Escherichia_coli_biogrid_physical_association_proteins, org.EcK12.egACCNUM, ifnotfound=NA))
+
+# genes of interest
 
 # then make a factor that is 1 if the probeset is "interesting" and 0 otherwise
-geneList_dros <- as.integer(universe_dros_net_entrez %in% essential_dros_net_entrez)
+geneList <- as.integer(Escherichia_coli_biogrid_proteins %in% Escherichia_coli_biogrid_physical_association_proteins)
 # name the factor with the probeset names
-names(geneList_dros) <- universe_dros_net_entrez
+names(geneList) <- Escherichia_coli_biogrid_proteins
 
 # Make the topGO object with the data
-sampleGOdata <- new("topGOdata", description = "Simple session", ontology = "BP", allGenes = as.factor(geneList_dros), nodeSize = 5,annot = annFUN.org, mapping="org.Dm.eg.db", ID="entrez")
+sampleGOdata <- new("topGOdata", description = "Simple session", ontology = "BP", allGenes = as.factor(geneList), nodeSize = 5,annot = annFUN.org, mapping="org.EcK12.eg.db", ID="entrez")
 
 # Run the tests
 resultFisher <- runTest(sampleGOdata, algorithm = "classic", statistic = "fisher") # the p-values are not adjusted!!!!
@@ -109,37 +167,137 @@ allRes$p_adjust_FDR <- p.adjust(p,method ="fdr",n = length(p))
 allRes$p_adjust_Bonferroni <- p.adjust(p,method ="bonferroni",n = length(p))
 
 
-write.table(x = allRes, file = "../Thesis_Essentiality_Drosophila_Signed_Network/Data/biological_process_enrichment_termFisher.csv", sep = ",", col.names = TRUE,row.names = FALSE)
-
-
 allRes_001_sig <- allRes[as.numeric(allRes$classicFisher)<0.01,]
 
-# pValue.classic <- score(resultFisher)
-# pValue.elim <- score(resultKS.elim)[names(pValue.classic)]
-# gstat <- termStat(sampleGOdata, names(pValue.classic))
-# gSize <- gstat$Annotated / max(gstat$Annotated) * 4
-# 
-# # function for building color map for plotting
-# colMap <- function(x) {
-#   .col <- rep(rev(heat.colors(length(unique(x)))), time = table(x))
-#   return(.col[match(1:length(x), order(x))])}
-#   
-# gCol <- colMap(gstat$Significant)
-# # Plot the p values of the different algorithms classic and elim
-# plot(pValue.classic, pValue.elim, xlab = "p-value classic", ylab = "p-value elim", pch = 19, cex = gSize, col = gCol)
-# sel.go <- names(pValue.classic)[pValue.elim < pValue.classic]
-# cbind(termStat(sampleGOdata, sel.go),elim = pValue.elim[sel.go],classic = pValue.classic[sel.go])
+```
 
+
+
+```{r}
 ####################################### Plot GO graph #########################################
 
-graph_GO_essential_strongly <- showSigOfNodes(sampleGOdata, score(resultFisher), firstSigNodes = 53, useInfo = 'all')
+showSigOfNodes <- showSigOfNodes(sampleGOdata, score(resultFisher), firstSigNodes = 53, useInfo = 'all')
 # it induces the GO graph with the quered IDs. 
-graph_GO_essential_strongly
+showSigOfNodes
 
-printGraph(sampleGOdata, resultFisher, firstSigNodes = 53, useInfo = 'all',fn.prefix = "graph_GO_essential_strongly", pdfSW = TRUE)
+printGraph(sampleGOdata, resultFisher, firstSigNodes = 10, useInfo = 'all',fn.prefix = "Gene Ontology enriched terms", pdfSW = TRUE)
 
-graph_GO_essential_strongly_igraph <- graph_from_graphnel(graph_GO_essential_strongly$dag, name = TRUE, weight = TRUE,
+showSigOfNodes_igraph <- graph_from_graphnel(showSigOfNodes$dag, name = TRUE, weight = TRUE,
   unlist.attrs = TRUE)
+
+summary(showSigOfNodes_igraph)
+
+```
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+ggraph(showSigOfNodes_igraph, 'igraph', algorithm = 'tree') + 
+  geom_edge_link(edge_width=0.2, arrow = arrow(length = unit(0.8, 'mm')), 
+                   end_cap = circle(0.8, 'mm'), aes(),colour = "steelblue") + 
+  geom_node_point(size=0.5, aes(),color="red")+
+  geom_node_text(aes(label = name), color = 'black', size = 3) +
+  #ggtitle("GO graph of the significant terms of essential cluster")+
+  theme_graph()+
+  theme(text=element_text(size=10, family="Courier"))+
+  theme(plot.title = element_text(size=12, vjust=1,family="Courier"))
+
+```
+
+
+All these test share the same assumption for the null hypothesis, that the probabilities for the selection of each gene are equal [@Rivals2007]. But it turns out that thay are not because the structure of gene ontology bipartite network of genes and gene terms has a heavy tail distribution and hence these tests are biased to high degree terms [@Glass2014]. 
+
+[Nice explanation to the biases of gene ontology](http://khughitt.github.io/slidify-annotation_enrichment_analysis/#1)
+
+
+# Kegg pathway annotation
+
+```{r, message = FALSE, warning=FALSE, eval=FALSE}
+
+library(KEGGgraph)
+library(KEGG.db)
+library(org.Dm.eg.db)
+library(KEGGREST)
+
+
+proteins_cluster <- intresting_genes_Essential
+myEID <- unlist(mget(proteins_cluster, org.Dm.egFLYBASE2EG, ifnotfound=NA))
+myEID <- as.character(myEID)
+
+kegg <- as.data.frame(unlist(mget(as.character(myEID), org.Dm.egPATH,
+       ifnotfound=list(NA))),row.names = NULL) %>% tibble::rownames_to_column(.,var="Var1")
+colnames(kegg) <- c("entrez_id", "kegg_pathway_id")
+
+kegg_summary <- kegg %>% group_by(kegg_pathway_id) %>% summarize(proteins=n()) %>% ungroup()
+
+kegg_summary[1,3] <- keggGet("dme00190")[[1]]$NAME
+kegg_summary[2,3] <- keggGet("dme01100")[[1]]$NAME
+kegg_summary[3,3] <- keggGet("dme03010")[[1]]$NAME
+kegg_summary[4,3] <- keggGet("dme03050")[[1]]$NAME
+
+colnames(kegg_summary) <- c("kegg pathway id", "proteins", "kegg pathway name")
+
+write.table(x = kegg_summary, file = "../Thesis_Essentiality_Drosophila_Signed_Network/Tables/Essential_cluster_kegg_summary.csv", sep = ",", col.names = TRUE,row.names = FALSE)
+
+library(pathview)
+
+pv.out_1 <- pathview(gene.data = kegg$entrez_id, pathway.id = as.character(kegg_summary$kegg_pathway_id[1]), species = "dme", out.suffix = "dros_essential_cluster", kegg.native = F)
+
+pv.out_2 <- pathview(gene.data = kegg$entrez_id, pathway.id = as.character(kegg_summary$kegg_pathway_id[2]), species = "dme", out.suffix = "dros_essential_cluster", kegg.native = F)
+
+pv.out_3 <- pathview(gene.data = kegg$entrez_id, pathway.id = as.character(kegg_summary$kegg_pathway_id[3]), species = "dme", out.suffix = "dros_essential_cluster", kegg.native = F)
+
+pv.out_4 <- pathview(gene.data = kegg$entrez_id, pathway.id = as.character(kegg_summary$kegg_pathway_id[4]), species = "dme", out.suffix = "dros_essential_cluster", kegg.native = F)
+
+pv.out_4b <- pathview(gene.data = kegg$entrez_id, pathway.id = as.character(kegg_summary$kegg_pathway_id[4]), species = "dme", out.suffix = "dros_essential_cluster", kegg.native = F,same.layer = F)
+
+
+
+## 1
+
+retrieveKGML("dme00190", organism="dme",destfile = "../Thesis_Essentiality_Drosophila_Signed_Network/Data/dme00190kegg.xml", method="wget", quiet=TRUE)
+
+dme00190pathway <- parseKGML("../Thesis_Essentiality_Drosophila_Signed_Network/Data/dme00190kegg.xml")
+
+dme00190pathway2 <- KEGGpathway2Graph(dme00190pathway, expandGenes=TRUE,genesOnly = T)
+
+
+## 2
+
+# retrieveKGML("dme01100", organism="dme",destfile = "../Thesis_Essentiality_Drosophila_Signed_Network/Data/dme01100kegg.xml", method="wget", quiet=TRUE)
+# 
+# dme01100pathway <- parseKGML("../Thesis_Essentiality_Drosophila_Signed_Network/Data/dme01100kegg.xml")
+# 
+# dme01100pathway2 <- KEGGpathway2Graph(dme01100pathway, expandGenes=TRUE,genesOnly = T)
+# dme01100pathway2
+
+## 3
+
+retrieveKGML("dme03010", organism="dme",destfile = "../Thesis_Essentiality_Drosophila_Signed_Network/Data/dme03010kegg.xml", method="wget", quiet=TRUE)
+
+dme03010pathway <- parseKGML("../Thesis_Essentiality_Drosophila_Signed_Network/Data/dme03010kegg.xml")
+
+dme03010pathway2 <- KEGGpathway2Graph(dme03010pathway, expandGenes=TRUE,genesOnly = T)
+
+
+## 4
+retrieveKGML("dme03050", organism="dme",destfile = "../Thesis_Essentiality_Drosophila_Signed_Network/Data/dme03050kegg.xml", method="wget", quiet=TRUE)
+
+dme03050pathway <- parseKGML("../Thesis_Essentiality_Drosophila_Signed_Network/Data/dme03050kegg.xml")
+
+dme03050pathway2 <- KEGGpathway2Graph(dme03050pathway, expandGenes=TRUE,genesOnly = F)
+
+
+# png <- keggGet(c( "dme01100"), "image") 
+# t <- tempfile()
+# library(png)
+# writePNG(png, t)
+# if (interactive()) browseURL(t)
+# 
+# tmp <- tempfile()
+# #pName <- "p53 signaling pathway"
+# pId <- as.character(kegg_summary$kegg_pathway_id[2])
+# retrieveKGML(pId, organism="dme", destfile=tmp, method="wget", quiet=TRUE)
+
+
 ```
 
 
