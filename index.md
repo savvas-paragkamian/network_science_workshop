@@ -14,7 +14,7 @@ The course contains 4 lectures and one last meeting for student presentations.
 4. Thursday 6/12 14:00-17:00 : Lecture 4
 5. Tuesday 11/12 14:00-17:00 : [Presentations](#presentations)
 
-## Lecture 1
+## [Lecture 1](workshop_0.html) : Introduction
 
 Introduction to Network Science
 
