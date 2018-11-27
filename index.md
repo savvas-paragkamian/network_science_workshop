@@ -16,11 +16,14 @@ The course contains 4 lectures and one last meeting for student presentations.
 
 ## [Lecture 1](workshop_0.html) : Introduction
 
-Introduction to Network Science
+* what are networks?
+* networks in biology
+* types of networks
+* graph theory basics
+* random networks
+* scale-free networks
 
 ## [Lecture 2](workshop_1.html) : Network descriptives
-
-This lecture contains: 
 
 * workspace and workflow introduction
 * graphs as mathematical objects and their representation
