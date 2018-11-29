@@ -29,6 +29,7 @@ check.packages_bioconductor <- function(pkg){
 # Check installation
 
 check_installation_bio <- check.packages_bioconductor(packages_gene_ontology_bioconductor)
+check_installation_kegg <- check.packages_bioconductor(packages_KEGG_reactome)
 
 ```
 
@@ -75,7 +76,7 @@ From [W3C](https://www.w3.org/standards/semanticweb/)
 
 ### Structure
 
-Gene ontology is actually 3 ontologies, Molecular function, Cellular component and Biological process. Ontologies are networks with specific structure, they are Directed Acyclic Graphs (DAGs) and not simple trees. The difference is that it is possible for classes to have multiple parents in the classifi cation hierarchy, and furthermore ontologies include additional types of relationships between entities other than hierarchical classification [@Dessimoz2017]. 
+Gene ontology is actually 3 ontologies: Molecular function, Cellular component and Biological process. Ontologies are networks with specific structure, they are Directed Acyclic Graphs (DAGs) and not simple trees. The difference is that it is possible for classes to have multiple parents in the classifi cation hierarchy, and furthermore ontologies include additional types of relationships between entities other than hierarchical classification [@Dessimoz2017]. 
 
 
 From [@Gene2015]
@@ -92,6 +93,7 @@ BP_children_tidy <- unlist(BP_children)
 # the Biological process network
 BP_children_tidy_df <- data.frame(GO.type.relation=names(BP_children_tidy),relation_GO=BP_children_tidy) %>% mutate(type.relation=gsub("(.*)\\.(.*)","\\2",GO.type.relation), GO.term=gsub("(.*)\\.(.*)","\\1",GO.type.relation)) # %>% mutate(Term=sapply(X = GO.term, FUN = Term))
 
+BP_children_terms <- unique(c(as.character(BP_children_tidy_df$relation_GO),as.character(BP_children_tidy_df$GO.term)))
 
 ```
 
@@ -104,6 +106,11 @@ The following relations are used in Gene Ontology
 * has part
 * regulates
 * positevely regulates
+
+```{r}
+kable(table(BP_children_tidy_df$type.relation),caption = "Biological process ontology relations")
+```
+
 
 Classes are arranged in a hierarchy from the general (high in the hierarchy) to the specific (low in the hierarchy).
 

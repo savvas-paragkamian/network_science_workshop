@@ -12,7 +12,7 @@ The course contains 4 lectures and one last meeting for student presentations.
 2. Tuesday 4/12 15:00-18:00 : [Lecture 2](workshop_1.html) - PC-room (E110)
 3. Thursday 6/12 14:00-17:00 : Lecture 3 - PC-room (E110)
 4. Tuesday 11/12 14:00-17:00 : [Presentations](#presentations) - Multimedia Room (E141)
-5. Thursday 13/12 - PC-room (E110)
+5. Thursday 13/12 14:00-17:00 - PC-room (E110)
 
 ## [Lecture 1](workshop_0.html) : Introduction
 
