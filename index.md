@@ -8,11 +8,11 @@ This workshop is taught by Christoforos Nikolaou and Savvas Paragkamian from [CG
 
 The course contains 4 lectures and one last meeting for student presentations.
 
-1. Thursday 29/11 14:00-17:00 : [Lecture 1](workshop_0.html)
-2. Tuesday 4/12 15:00-18:00 : [Lecture 2](workshop_1.html)
-3. Wednesday 5/12 15:00-18:00 : Lecture 3
-4. Thursday 6/12 14:00-17:00 : Lecture 4
-5. Tuesday 11/12 14:00-17:00 : [Presentations](#presentations)
+1. Thursday 29/11 14:00-17:00 : [Lecture 1](workshop_0.html) - PC-room (E110)
+2. Tuesday 4/12 15:00-18:00 : [Lecture 2](workshop_1.html) - PC-room (E110)
+3. Thursday 6/12 14:00-17:00 : Lecture 3 - PC-room (E110)
+4. Tuesday 11/12 14:00-17:00 : [Presentations](#presentations) - Multimedia Room (E141)
+5. Thursday 13/12 - PC-room (E110)
 
 ## [Lecture 1](workshop_0.html) : Introduction
 
@@ -40,9 +40,6 @@ The course contains 4 lectures and one last meeting for student presentations.
 * percolation theory - robustness
 * network inference from data
 * introduction to dynamic systems on networks
-
-## Lecture 4  : Biological network annotations 
-
 * gene ontology annotation
 * bipartite networks
 * KEGG pathways annotation
@@ -107,5 +104,6 @@ Conclusions:
 * Introduction to [Tidygraph](https://www.data-imaginist.com/2017/introducing-tidygraph/)
 * An awesome [list](https://github.com/briatte/awesome-network-analysis) of resources to construct, analyze and visualize network data
 * Experiments with [igraph](https://www.r-bloggers.com/experiments-with-igraph/)
+* Introduction to Bioconductor [here](https://bioconductor.github.io/BiocWorkshops/introduction-to-bioconductor-annotation-resources.html)
 
   

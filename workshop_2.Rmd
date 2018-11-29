@@ -54,11 +54,5 @@ Integrating genetic and protein–protein interaction networks maps a functional
 
 
 
-# Assignments
-
-
-1. Comparing different grouping/clustering methods in networks
-2. Spreading processes
-3. 
 
 # References

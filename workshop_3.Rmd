@@ -43,8 +43,9 @@ packages_networks <- c("igraph", "ggraph","tidygraph", "bipartite")
 # Annotation packages
 
 packages_gene_ontology_bioconductor <- c("AnnotationDbi","RBGL","GO.db","topGO","Rgraphviz","GSEABase")
+packages_KEGG_reactome <- c("KEGGgraph","KEGG.db","KEGGREST")
 
-packages_Lab <- c(packages_workspace,packages_data,packages_networks,packages_gene_ontology_bioconductor)
+packages_Lab <- c(packages_workspace,packages_data,packages_networks,packages_gene_ontology_bioconductor,packages_KEGG_reactome)
 
 packages_Lab_load <- lapply(packages_Lab,library,character.only=TRUE)
 ```
@@ -56,13 +57,30 @@ In large scale analyses genes and/or proteins are used as statistical objects. T
 
 ## What are ontologies
 
+From Gruber, T. R in 1993 :
 
+> An ontology is a description (like a formal specification of a program) of the concepts and relationships that can formally exist for an agent or a community of agents. This definition is consistent with the usage of ontology as set of concept definitions, but more general. And it is a different sense of the word than its use in philosophy.
+
+Ontologies are a formal representation of knowledge. 
+
+![Knowledge pyramid](images/DIKW_Pyramid.png)
+
+They are a very important step towards [5 star open data](https://5stardata.info/en/), linked data and the Web 3.0. The are specific languages to develop ontologies like OWL. 
+
+From [W3C](https://www.w3.org/standards/semanticweb/)
+
+> The term “Semantic Web” refers to W3C’s vision of the Web of linked data. Semantic Web technologies enable people to create data stores on the Web, build vocabularies, and write rules for handling data. Linked data are empowered by technologies such as RDF, SPARQL, OWL, and SKOS.
 
 ## Gene ontology content
 
-Gene
+### Structure
 
-Structure
+Gene ontology is actually 3 ontologies, Molecular function, Cellular component and Biological process. Ontologies are networks with specific structure, they are Directed Acyclic Graphs (DAGs) and not simple trees. The difference is that it is possible for classes to have multiple parents in the classifi cation hierarchy, and furthermore ontologies include additional types of relationships between entities other than hierarchical classification [@Dessimoz2017]. 
+
+
+From [@Gene2015]
+![GO contents](Images/go contents.png)
+
 
 ```{r}
 BP_children <- as.list(GOBPCHILDREN)
@@ -79,13 +97,17 @@ BP_children_tidy_df <- data.frame(GO.type.relation=names(BP_children_tidy),relat
 
 ## Relationships
 
+The following relations are used in Gene Ontology
+
 * is a
 * part of
 * has part
 * regulates
 * positevely regulates
 
-As a tool
+Classes are arranged in a hierarchy from the general (high in the hierarchy) to the specific (low in the hierarchy).
+
+Because of DAG structure and the relationships mentioned before reasoning and logic become possible.
 
 ## Gene ontology annotation in r
 
@@ -101,7 +123,6 @@ Escherichia_coli_biogrid_proteins <- as.character(unique(c(Escherichia_coli_biog
 Escherichia_coli_biogrid_physical_association <- Escherichia_coli_biogrid %>% filter(Interaction.Types %in% c("psi-mi:MI:0407(direct interaction)","psi-mi:MI:0915(physical association)"))
 
 Escherichia_coli_biogrid_physical_association_proteins <- as.character(unique(c(Escherichia_coli_biogrid_physical_association$InteractorA_entrez,Escherichia_coli_biogrid_physical_association$InteractorB_entrez))) # genes of interest
-
 
 ```
 
@@ -174,7 +195,7 @@ allRes_001_sig <- allRes[as.numeric(allRes$classicFisher)<0.01,]
 
 ```
 
-
+Now that we performed the test we can plot the part of the biological process ontology that is significant.
 
 ```{r}
 ####################################### Plot GO graph #########################################
@@ -217,7 +238,6 @@ All these test share the same assumption for the null hypothesis, that the proba
 
 library(KEGGgraph)
 library(KEGG.db)
-library(org.Dm.eg.db)
 library(KEGGREST)
 
 
