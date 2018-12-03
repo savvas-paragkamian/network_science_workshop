@@ -672,7 +672,7 @@ centr_betw(c_elegans_net, directed = TRUE)$centralization
 
 #### Graph assortativity
 
-The tendency of nodes to link to other nodes that share a specific attribute is call assortative mixing or homophily[@Newman2010d; @Wasserman1994].
+The tendency of nodes to link to other nodes that share a specific attribute is called assortative mixing or homophily[@Newman2010d; @Wasserman1994].
 
 ```{r}
 c_elegans_tidy_graph_edges <- c_elegans_edgelist %>% left_join(c_elegans_tidy_graph_nodes,by=c("FromNodeId"="name")) %>% left_join(c_elegans_tidy_graph_nodes,by=c("ToNodeId"="name"))

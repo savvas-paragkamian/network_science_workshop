@@ -49,7 +49,7 @@ The course contains 4 lectures and one last meeting for student presentations.
 
 ## Presentations {#presentations}
 
-For the final examination of the course all students, individually or in groups of two, will present their assignments. They can choose a specific topic they are intersted in or choose from the list below. Students can present their assignments with slides or using markdown with their code. Duration of presentations will be 20 minutes.
+For the final examination of the course all students, individually, will present their assignments. They can choose a specific topic they are intersted in or choose from the list below. Students can present their assignments with slides or using markdown with their code. Duration of presentations will be 20 minutes.
 
 #### Structure
 
@@ -88,13 +88,13 @@ Conclusions:
 #### Featured topics 
 
 1. Generalize assortativity for every centrality measure and redefine it using information theory
-2. Compare network community detection methods
-3. Modularity vs Nestedness
+2. Compare network community detection methods (Modularity vs Information vs Link-based)
 4. Centrality lethality rule using Gene Ontology centralities
 5. Spreading phenomena
 6. Analysis of neural networks as networks
 7. Multiplex networks robustness
 8. Network analysis of gene ontology as bipartite, as association networks based on terms from real data annotation
+9. Inference network from gene expression data (RNA-seq) and perform the network analysis and gene ontology annotation
 
 
 # Online material
@@ -105,5 +105,8 @@ Conclusions:
 * An awesome [list](https://github.com/briatte/awesome-network-analysis) of resources to construct, analyze and visualize network data
 * Experiments with [igraph](https://www.r-bloggers.com/experiments-with-igraph/)
 * Introduction to Bioconductor [here](https://bioconductor.github.io/BiocWorkshops/introduction-to-bioconductor-annotation-resources.html)
+* Epidemic modeling in R, packages, tutorials and workshops : [EpiModel](http://www.epimodel.org/tut.html)
+* Simulating network diffusion with R [Tutorial](https://chengjunwang.com/post/en/2014-03-09-simulate-network-diffusion-with-r/)
+* Duke Network Analysis Center [Diffusion simulations](https://dnac.ssri.duke.edu/r-labs/2017/04_diffusion_simulations.php)
 
   
