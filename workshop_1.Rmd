@@ -438,12 +438,23 @@ Currently there isn't a function in `igraph` to automate the statistical test of
 * feed forward loop
 * etc
 
-Find the statisticaly significant motifs.
+Find the statistically significant motifs.
 
 Structural balance analysis of signed graphs. 
 
 ![Bi-fan signed motifs](Images/bi-fan motifs.png)
 from [@Ingram2006a]. 
+
+Because of the observation that both engineered as well as natural networks share the same network motif there have been studies more general designing principles. 
+
+A debate:
+
+Biological Networks: The Tinkerer as an Engineer [@Alon2003]
+
+> The similarity between the creations of tinkerer and engineer also raises a fundamental scientific challenge: understanding the laws ofnature that unite evolved and designed systems
+
+Structure does not determine function [@Ingram2006a] 
+> Simply identifying the presence of particular motifs, without a detailed experimental evaluation of their respective dynamics, is unlikely to offer much insight into the functional properties of real transcriptional networks. In essence this means that knowing the structure of a network, or an inventory of the discrete modules making up that structure, doesn't provide enough information to predict how functional processes occur or how biochemical reactions proceed in a biological system.
 
 ### Grouping methods
 
@@ -464,7 +475,7 @@ The importance of module detection in biology (from [@Koch2012]):
 Modules in networks:
 > A cluster in a network is intuitively defined as a set of densely connected nodes that is sparsely connected to other clusters in the graph
 
-Finding communities in networks is an optimization problem. For a graph $G(V,E)$ with $n$ nodes there are $2^{n-1}$ ways of dividing them into two components [@Newman2010d]. So in order to tackle this problem many algorihtms have been introduced using interdisciplinary methods.
+Finding communities in networks is an optimization problem. For a graph $G(V,E)$ with $n$ nodes there are $2^{n-1}$ ways of dividing them into two components [@Newman2010d]. So in order to tackle this problem many algorithms have been introduced using interdisciplinary methods.
 
 * [Modularity based methods](https://en.wikipedia.org/wiki/Modularity_(networks))
 * Information theory methods - infomap function
@@ -609,6 +620,16 @@ c_elegans_tidy_graph <- c_elegans_tidy_graph %>% activate(nodes) %>% mutate(ecce
 
 ```
 
+#### PageRank
+
+One the most successful applications, the PageRank algorithm was the heart of Google. They ranked nodes of the network (webpages) based on the transition matrix of the network. Transition matrix or stochastic matrix is a square matrix used to describe the transitions of a Markov chain.
+
+
+```{r}
+c_elegans_tidy_graph <- c_elegans_tidy_graph %>% activate(nodes) %>% mutate(pageRank=centrality_pagerank())
+
+```
+
 
 #### Centrality applications in biological networks
 
@@ -683,6 +704,10 @@ c_elegans_tidy_graph_edges <- c_elegans_edgelist %>% left_join(c_elegans_tidy_gr
 
 
 assortativity_degree(c_elegans_net,directed = T)
+
+assortativity(c_elegans_net, V(c_elegans_net)$betweenness, directed = TRUE)
+
+
 ```
 
 From [Assortativity in wiki](https://en.wikipedia.org/wiki/Assortativity)
@@ -716,7 +741,7 @@ ggplot()+
 
 ```
 
-Generalize assortativity for every centrality measure.
+Generalize assortativity for every centrality measure and for different correlation methods.
 
 ## Centralities distributions
 
