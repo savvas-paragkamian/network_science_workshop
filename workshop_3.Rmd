@@ -145,6 +145,7 @@ BiocManager::install("org.EcK12.eg.db", version = "3.8")
 
 
 ```{r, message=FALSE, warning=FALSE}
+
 library(org.EcK12.eg.db)
 
 my_map <- org.EcK12.eg.db
@@ -248,7 +249,7 @@ library(KEGG.db)
 library(KEGGREST)
 
 
-proteins_cluster <- intresting_genes_Essential
+proteins_cluster <- Escherichia_coli_biogrid_physical_association_proteins
 myEID <- unlist(mget(proteins_cluster, org.Dm.egFLYBASE2EG, ifnotfound=NA))
 myEID <- as.character(myEID)
 
@@ -283,7 +284,7 @@ pv.out_4b <- pathview(gene.data = kegg$entrez_id, pathway.id = as.character(kegg
 
 ## 1
 
-retrieveKGML("dme00190", organism="dme",destfile = "../Thesis_Essentiality_Drosophila_Signed_Network/Data/dme00190kegg.xml", method="wget", quiet=TRUE)
+retrieveKGML("dme00190", organism="dme",destfile = "../Data/dme00190kegg.xml", method="wget", quiet=TRUE)
 
 dme00190pathway <- parseKGML("../Thesis_Essentiality_Drosophila_Signed_Network/Data/dme00190kegg.xml")
 
@@ -314,18 +315,6 @@ retrieveKGML("dme03050", organism="dme",destfile = "../Thesis_Essentiality_Droso
 dme03050pathway <- parseKGML("../Thesis_Essentiality_Drosophila_Signed_Network/Data/dme03050kegg.xml")
 
 dme03050pathway2 <- KEGGpathway2Graph(dme03050pathway, expandGenes=TRUE,genesOnly = F)
-
-
-# png <- keggGet(c( "dme01100"), "image") 
-# t <- tempfile()
-# library(png)
-# writePNG(png, t)
-# if (interactive()) browseURL(t)
-# 
-# tmp <- tempfile()
-# #pName <- "p53 signaling pathway"
-# pId <- as.character(kegg_summary$kegg_pathway_id[2])
-# retrieveKGML(pId, organism="dme", destfile=tmp, method="wget", quiet=TRUE)
 
 
 ```

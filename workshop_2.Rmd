@@ -19,15 +19,57 @@ knitr::opts_chunk$set(echo = TRUE)
 # Network structures
 
 
+
 # Random graphs
+
+```{r}
+erdos_renyi <- sample_gnp(1000, 1/1000)
+```
+
 
 # The Barabasi-Albert model
 
+```{r}
+g <- sample_pa(10000)
+
+```
+
+
 # Small-world network
+
+```{r}
+g <- sample_smallworld(1, 100, 5, 0.05)
+
+```
+
+Lattice
+
+```{r}
+make_lattice(c(5, 5, 5))
+
+```
 
 The concept of complexity
 
-# Robustness
+# Dynamic systems on networks
+
+Very nice tutorial [@Porter2016]
+
+> When studying a dynamical process, one is concerned with its behavior as a function of time, space, and its parameters. There are numerous studies that examine how many people are infected by a biological contagion and whether it persists from one season to another, whether and to what extent interacting oscillators synchronize, whether a meme on the internet becomes viral or not, and more. These studies all have something in common: the dynamics are occurring on a set of discrete entities (the nodes in a network) that are connected to each other via edges in some nontrivial way. This leads to the natural question of how such underlying nontrivial connectivity affects dynamical processes.
+
+> Traditional studies of continuous dynamical systems are concerned with qualita- tive methods to study coupled ordinary differential equations (ODEs) [127, 292] and/or partial differential equations (PDEs) [63, 65], and traditional studies of discrete dynamical systems take analogous approaches with maps [127, 292].1 If the state of each node in a network is governed by its own ODE (or PDE or map), then studying a dynamical process on a network entails examining a (typically large) system of coupled ODEs (or PDEs or maps). The change in state of a node depends not only on its own current state but also on the current states of its neighboring nodes, and a network encodes which nodes interact with each other and how strongly they interact.
+
+## Robustness
+
+> Consider a network, and let each of its nodes be either occupied or unoccupied. One can construe occupied nodes as the operational nodes in a network, whereas unoccupied nodes are nonfunctional. We might select nodes uniformly at random and state that they are unoccupied (i.e., are effectively removed from the network) with uniform, independent probability q D 1 􏱁 p 2 Œ0; 1􏱉. This is a so- called “random attack” with an occupation probability of p (and thus an “attack probability” of 1 􏱁 p). Alternatively, we could be devious and perform some kind of “targeted attack” in which we remove (i.e., set as unoccupied) some fraction of nodes preferentially by degree (which is, by far, the most usual case considered), geodesic node betweenness centrality (a measure of how often a node occurs on short paths), location in the network, or some other network diagnostic. In the limit as the number of nodes N ! 1 in one of these processes, what fraction qc of the nodes needs to be removed so that the network no longer has a very large connected component—called a giant connected component (GCC)—of occupied nodes? A percolation transition occurs at the critical occupation probability pc D 1 􏱁 qc that indicates the point of appearance/disappearance of a GCC, which is defined as a connected network component that scales in linear proportion to N as N ! 1. 
+
+
+
+
+Modeling in networks from [@Vespignani2012], [@Barrat2008b]
+
+> The presence of large-scale fluctuations virtually acting at all scales of the network connectivity pattern calls for a mathematical analysis where the variables characterizing each node ofthe network explicitly enter the description of the system. Unfortunately, the general solution, handling the master equation of the system, is hardly, if ever, achievable even for very simple dynamical processes. For this reason, a viable theoretical approach has to be based on techniques such as mean-field and deterministic continuum approximations, which usually provide the understanding of the basic phenomenology and phase diagram of the process under study. In both cases, the heterogeneous nature of the network- connectivity pattern is introduced by aggregating variables accord- ing to a degree-block formalism that assumes that all nodes with the same degree k are statistically equivalent. This assumption allows the grouping ofnodes in degree classes, yielding a convenient representation of the system.
+
 
 # Decompositions
 
@@ -46,6 +88,20 @@ How far is this network from reality, and why?
 
 ## Gene expression microarrays
 
+### Correlation networks
+
+```{r}
+install.packages("BiocManager") 
+BiocManager::install("WGCNA") 
+```
+
+library(WGCNA)
+
+
+### Bayesian networks
+
+> The task of fitting a Bayesian network is usually called learning, a term borrowed from expert systems theory and artificial intelligence. It is performed in two different steps, which correspond to model selection and parameter estimation techniques in classic statistical models.
+
 ## PPI
 
 Integrating genetic and protein–protein interaction networks maps a functional wiring diagram of a cell [@VanderSluis2018]
@@ -54,5 +110,4 @@ Integrating genetic and protein–protein interaction networks maps a functional
 
 
 
-
-# References
+# Infering networks from time series data is multiple step proccess.References

@@ -64,11 +64,15 @@ check.packages_cran <- function(pkg){
     sapply(pkg, library, character.only = TRUE)
 }
 
+
+
 check.packages_bioconductor <- function(pkg){
+    
+    if (!requireNamespace("BiocManager"))
+    install.packages("BiocManager")
     new.pkg <- pkg[!(pkg %in%library()[]$result[,1])]
-    source("https://bioconductor.org/biocLite.R")
     if (length(new.pkg)) 
-        biocLite(new.pkg, dependencies = TRUE)
+        BiocManager::install(new.pkg,version = "3.8")
     sapply(pkg, library, character.only = TRUE)
 }
 
