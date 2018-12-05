@@ -36,7 +36,7 @@ Questions
 
 ## Network packages
 
-There are many packages for network analysis that have overlapping functionality, like `statnet`, `sna`, `network`, `RBGL` and `igraph`. We will use `igraph` and the new package `tidygraph` for the workshop. `tidygraph` brings the "tidy" approach of `tidyverse` to network science using most of `igraph`'s code.
+There are many packages for network analysis that have overlapping functionality, like `statnet`, `sna`, `network`, `RBGL` and `igraph`. We will use `igraph` and the new package `tidygraph` for the workshop. `tidygraph` brings the "tidy" approach of `tidyverse` to network science using most of `igraph`'s code.[@Barabasi1999a]
 
 > igraph is a collection of network analysis tools with the emphasis on efficiency, portability and ease of use. igraph is open source and free. igraph can be programmed in R, Python and C/C++.
 
@@ -81,7 +81,7 @@ check.packages_bioconductor <- function(pkg){
 
 check_installation_lab_1 <- check.packages_cran(packages_Lab_1)
 
-check_installation_bio <- check.packages_bioconductor(packages_gene_ontology_bioconductor)
+#check_installation_bio <- check.packages_bioconductor(packages_gene_ontology_bioconductor)
 
 
 ```
@@ -220,6 +220,10 @@ Escherichia_coli_biogrid_physical_association <- Escherichia_coli_biogrid %>% fi
 
 Escherichia_coli_biogrid_PPI_net <- Escherichia_coli_biogrid_physical_association %>% dplyr::select(Alt.IDs.Interactor.A,Alt.IDs.Interactor.B) %>% as_tbl_graph(.,directed = FALSE)
 
+Escherichia_coli_biogrid_PPI_net_igraph <- Escherichia_coli_biogrid_physical_association %>% dplyr::select(Alt.IDs.Interactor.A,Alt.IDs.Interactor.B)
+
+
+Escherichia_coli_biogrid_PPI_net_igraph_n <- graph_from_data_frame(Escherichia_coli_biogrid_PPI_net_igraph,directed = F)
 ```
 
 
@@ -247,7 +251,7 @@ Here we will import the *C. elegans* frontal neuronal network from the [SNAP Lib
 
 ```{r, message=FALSE, warning=FALSE}
 # import files
-c_elegans_edgelist <- read.delim(file = "Data/C-elegans-frontal.txt",sep = " ",header = T) %>% mutate(FromNodeId=as.character(FromNodeId),ToNodeId=as.character(ToNodeId))
+c_elegans_edgelist <- read.delim(file = "Data/C-elegans-frontal.txt",sep = " ",header = T) %>% mutate( FromNodeId=as.character(FromNodeId),ToNodeId=as.character(ToNodeId))
 
 c_elegans_metadata <- read_csv(file = "Data/C-elegans-frontal-meta.csv",col_names = T) %>% dplyr::rename(x=posx ,y=posy)
 
@@ -305,6 +309,10 @@ Then we can study the whole network.
 ```{r}
 is_connected(c_elegans_net)
 clusters(c_elegans_net) # if there are multiple network components sometimes is useful to use onle the giant component. To extract the giant component you can use the decompose.graph function.
+
+decg<-decompose.graph(c_elegans_net, min.vertices = 10)
+
+c_elegans_net_deg <- decg[[1]]
 ```
 
 A graph is connected if information can flow from each node to all the other nodes of the network. A graph can be disconnected if it has distinct components. Also directed networks is possible to be disconnected even though is only one cluster because the direction of the edges doesn't allow the flow from some nodes to some others. 
@@ -484,9 +492,9 @@ Finding communities in networks is an optimization problem. For a graph $G(V,E)$
 Infomap algorithm
 
 ```{r}
-c_elegans_tidy_graph %>% mutate(community_infomap = as.factor(group_infomap())) %>% 
+c_elegans_tidy_graph %>% mutate(community_infomap = as.factor(group_infomap())) %>%
     ggraph(layout = "manual", circular = FALSE, node.positions = c_elegans_metadata) + 
-    geom_edge_link(edge_width=0.3,colour="gray50",arrow = arrow(length = unit(4, 'mm')), end_cap = circle(3, 'mm')) +     geom_node_point(aes(colour = community_infomap), size = 3) +
+    geom_edge_link(edge_width=0.3,colour="gray50",arrow = arrow(length = unit(4, 'mm')), end_cap = circle(3, 'mm')) +   geom_node_point(aes(colour = community_infomap), size = 3) +
     ggtitle("C. elegans network infomap clusters")+
     theme_bw()+
     theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank())
