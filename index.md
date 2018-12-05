@@ -99,6 +99,7 @@ Conclusions:
 
 # Online material
 
+* Network Science [Book](http://networksciencebook.com) by Albert-László Barabási
 * Nice network analysis and visualization introduction tutorial [Katherine Ognyanova](http://kateto.net/network-visualization)
 * Brief introduction [Introduction to Network Analysis with R](https://www.jessesadler.com/post/network-analysis-with-r/)
 * Introduction to [Tidygraph](https://www.data-imaginist.com/2017/introducing-tidygraph/)
