@@ -323,7 +323,7 @@ $\omega ={\frac {L_{r}}{L}}-{\frac {C}{C_{\ell }}}$
 
 The concept of complexity [@Strogatz2001a]. 
 
-### From Regular to Random.
+#### From Regular to Random.
 
 What is the measurment of randomness?
 
@@ -342,7 +342,7 @@ data_frame(degree=igraph::degree(g)) %>% group_by(degree) %>% summarise(n=n()) %
 
 ```
 
-The rich gets richer method. 
+The rich gets richer method, preferencial attachment [@Barabasi1999a]. There are other methods (some and based on natural selection) and distributions that have this scale free structure. The Matthew effect, rich gets richer and poor gets poorer, follows a log distribution.
 
 # Dynamic systems on networks
 
@@ -357,6 +357,118 @@ Very nice tutorial [@Porter2016]
 > Consider a network, and let each of its nodes be either occupied or unoccupied. One can construe occupied nodes as the operational nodes in a network, whereas unoccupied nodes are nonfunctional. We might select nodes uniformly at random and state that they are unoccupied (i.e., are effectively removed from the network) with uniform, independent probability q D 1 􏱁 p 2 Œ0; 1􏱉. This is a so- called “random attack” with an occupation probability of p (and thus an “attack probability” of 1 􏱁 p). Alternatively, we could be devious and perform some kind of “targeted attack” in which we remove (i.e., set as unoccupied) some fraction of nodes preferentially by degree (which is, by far, the most usual case considered), geodesic node betweenness centrality (a measure of how often a node occurs on short paths), location in the network, or some other network diagnostic. In the limit as the number of nodes N ! 1 in one of these processes, what fraction qc of the nodes needs to be removed so that the network no longer has a very large connected component—called a giant connected component (GCC)—of occupied nodes? A percolation transition occurs at the critical occupation probability pc D 1 􏱁 qc that indicates the point of appearance/disappearance of a GCC, which is defined as a connected network component that scales in linear proportion to N as N ! 1. 
 
 
+```{r}
+## function to destroy networks
+
+destroy_net <- function(g,destroy_method) {
+
+destroy_method <- as.character(destroy_method)
+nodes <- vcount(g)
+
+V(g)$name <- rep(x = 1:nodes)
+ destroy_net_df <- data.frame(matrix(ncol = 7,nrow = nodes))
+  colnames(destroy_net_df) <- c("nodes","giant_component_size","nclusters","n_edges","mean_degree","average_clustering","average_path")
+
+if (destroy_method=="random") {
+  
+  for(i in 1:(nodes-1)) {
+ 
+  delete_node<- sample(x = V(g)$name,size = 1)
+  
+  clusters_network <- clusters(g)
+
+  destroy_net_df[i,1] <- vcount(g)
+  destroy_net_df[i,2] <- max(clusters_network$csize)
+  destroy_net_df[i,3] <- clusters_network$no
+  destroy_net_df[i,4] <- ecount(g)
+  destroy_net_df[i,5] <- mean(igraph::degree(g))
+  destroy_net_df[i,6] <- transitivity(g,type = "average")
+  destroy_net_df[i,7] <- average.path.length(g)
+  
+  g <- delete_vertices(graph = g,v = paste0(delete_node))
+  
+
+  }
+  
+} else {
+  
+  for(i in 1:(nodes-1)) {
+ 
+  max_destroy_method_nodes <- as.character(V(g)[degree ==max(V(g)$degree)]$name)
+  
+  clusters_network <- clusters(g)
+  destroy_net_df[i,1] <- vcount(g)
+  destroy_net_df[i,2] <- max(clusters_network$csize)
+  destroy_net_df[i,3] <- clusters_network$no
+  destroy_net_df[i,4] <- ecount(g)
+  destroy_net_df[i,5] <- mean(igraph::degree(g))
+  destroy_net_df[i,6] <- transitivity(g,type = "global")
+  destroy_net_df[i,7] <- average.path.length(g)
+  
+  if (length(max_destroy_method_nodes)>1) {
+    
+    delete_node<- sample(x = max_destroy_method_nodes,size = 1)
+    g <- delete_vertices(graph = g,v = paste0(delete_node))
+    
+  } else {
+    
+    delete_node<- max_destroy_method_nodes
+    g <- delete_vertices(graph = g,v = paste0(delete_node))
+    
+  }
+
+  
+  }
+  
+  }
+  
+  destroy_net_df
+  
+}
+
+
+
+```
+
+```{r}
+
+# Destroy based on degree and random
+g_barabasi <- sample_pa(1000)
+V(g_barabasi)$degree <- igraph::degree(g)
+
+
+destroy_barabasi_net_degree <- destroy_net(g_barabasi,"degree") %>% mutate(fraction_removed=nodes/max(nodes), fraction_giant_comp=giant_component_size/max(nodes))
+destroy_barabasi_net_random <- destroy_net(g_barabasi,"random") %>% mutate(fraction_removed=nodes/max(nodes), fraction_giant_comp=giant_component_size/max(nodes))
+
+# random net
+
+g_random <- sample_gnp(n = 1000,p = 0.01,directed = F,loops = F)
+V(g_random)$degree <- igraph::degree(g)
+
+
+destroy_random_net_degree <- destroy_net(g_random,"degree") 
+
+
+destroy_random_net_random <- destroy_net(g_random,"random") 
+
+
+```
+
+```{r}
+ggplot()+
+  geom_point(data = destroy_barabasi_net_degree,aes(x=nodes,y=giant_component_size, color="destroy_barabasi_net_degree"),show.legend = T)+
+  geom_point(data = destroy_barabasi_net_random,aes(x=nodes,y=giant_component_size, color="destroy_barabasi_net_random"),show.legend = T)+
+  geom_point(data = destroy_random_net_degree,aes(x=nodes,y=giant_component_size, color="destroy_random_net_degree"),show.legend = T)+
+  geom_point(data = destroy_random_net_random,aes(x=nodes,y=giant_component_size, color="destroy_random_net_random"),show.legend = T)+
+  scale_colour_manual(values = c("destroy_barabasi_net_degree"="palegreen2","destroy_barabasi_net_random"="darkorange2","destroy_random_net_degree"="orangered4","destroy_random_net_random"="steelblue3"))+
+  ggtitle("Robustness")+
+  labs(x="nodes", y= "fraction_giant_comp")+
+  theme_bw()+
+  scale_x_reverse()+
+  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(),legend.title = element_blank())
+
+
+```
 
 
 Modeling in networks from [@Vespignani2012], [@Barrat2008b]
@@ -615,7 +727,8 @@ summary(showSigOfNodes_igraph)
 
 ```
 
-```{r, message=FALSE, warning=FALSE, echo=FALSE}
+```{r, message=FALSE, warning=FALSE, echo=FALSE, eval=FALSE}
+
 ggraph(showSigOfNodes_igraph, 'igraph', algorithm = 'tree') + 
   geom_edge_link(edge_width=0.2, arrow = arrow(length = unit(0.8, 'mm')), 
                    end_cap = circle(0.8, 'mm'), aes(),colour = "steelblue") + 
