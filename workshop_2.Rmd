@@ -111,8 +111,8 @@ for (j in 1:plots) {
 
 erdos_renyi_parameters <- function(nodes,iterations,directed,loops,max_prob) {
   
-  erdos_renyi_df <- data.frame(matrix(ncol = 8,nrow = iterations))
-  colnames(erdos_renyi_df) <- c("nodes","giant_compontent_size","nclusters","probability","directed","loops","n_edges","mean_degree")
+  erdos_renyi_df <- data.frame(matrix(ncol = 10,nrow = iterations))
+  colnames(erdos_renyi_df) <- c("nodes","giant_compontent_size","nclusters","probability","directed","loops","n_edges","mean_degree","average_clustering","average_path")
   
   probability <- seq(from=0,to=max_prob, by=max_prob/iterations)
   
@@ -130,7 +130,8 @@ erdos_renyi_parameters <- function(nodes,iterations,directed,loops,max_prob) {
     erdos_renyi_df[i,6] <- loops
     erdos_renyi_df[i,7] <- ecount(erdos_renyi)
     erdos_renyi_df[i,8] <- mean(igraph::degree(erdos_renyi))
-    
+    erdos_renyi_df[i,9] <- transitivity(erdos_renyi,type = "average")
+    erdos_renyi_df[i,10] <- average.path.length(erdos_renyi)
     rm(clusters_network,erdos_renyi)
   
   }
@@ -225,6 +226,17 @@ ggplot()+
 
 ```
 
+```{r, message=FALSE, warning=FALSE}
+ggplot()+
+  geom_point(data = erdos_renyi_df,aes(x=probability,y=average_path), color="salmon1",show.legend = F)+
+  ggtitle("Erdos - Renyi networks")+
+  labs(x="Probability", y= "Average path length")+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank())
+
+```
+
+Do a plot with the average local transitivity.
 
 # Small-world network
 
@@ -235,32 +247,102 @@ g <- sample_smallworld(1, 100, 5, 0.05)
 
 ```
 
-Lattice
+Lattice, maximum order.
 
 ```{r}
-make_lattice(c(5, 5, 5))
+lattice <- make_lattice(length = 100, dim = 1,nei = 2,circular = T)
+
+plot(make_lattice(length = 4, dim = 2,nei = 2,circular = F),main="Example of lattice which is not circular")
+plot(make_lattice(length = 4, dim = 1,nei = 2,circular = T),main="Example of lattice which is circular")
 
 ```
 
-Measure of small-worldness [@Neal2017]
+Algorithm for small-world from Wikipedia
 
+1. Construct a regular ring lattice, a graph with N nodes each connected to K neighbors, K/2 on each side. That is, if the nodes are labeled $n_{0}\ldots n_{{N-1}}$, there is an edge $(n_{i},n_{j})$ if and only if 
+
+${\displaystyle 0<|i-j|\ \mathrm {mod} \ \left(N-1-{\frac {K}{2}}\right)\leq {\frac {K}{2}}.}$
+
+2. For every node $n_{i}=n_{0},\dots ,n_{{N-1}}$ take every edge connecting $n_{i}$ to its $K/2$ rightmost neighbors, that is every edge 
+${\displaystyle (n_{i},n_{j}\ \mathrm {mod} \ N)}$ with 
+${\displaystyle n_{i}<n_{j}\leq n_{i}+K/2}$, and rewire it with probability $\beta$. Rewiring is done by replacing
+${\displaystyle (n_{i},n_{j}\ \mathrm {mod} \ N)}$ with $(n_{i},n_{k})$ where k is chosen uniformly at random from all possible nodes while avoiding self-loops $(k\neq i)$ and link duplication (there is no edge $(n_{i},n_{{k'}})$ with k'=k at this point in the algorithm).
+
+Degrees of the lattice
+```{r}
+igraph::degree(lattice)
+```
+
+Average path length
+```{r}
+igraph::average.path.length(lattice)
+```
+
+Average local transitivity - clustering coefficient
+```{r}
+igraph::transitivity(graph = lattice,type = "average")
+
+```
+
+Comparing to the random network:
+
+```{r}
+random <- sample_gnp(n = vcount(lattice), p = 0.06,directed = F,loops = F)
+igraph::average.path.length(random)
+igraph::transitivity(graph = random,type = "average")
+```
+
+and the small-world network
+
+```{r}
+g <- sample_smallworld(1, 100, 5, 0.05)
+igraph::average.path.length(g)
+igraph::transitivity(graph = g,type = "average")
+```
+
+limitation of small world model : no scale free degree distribution.
+
+```{r}
+g <- sample_smallworld(1, 1000, 5, 0.05)
+data_frame(degree=igraph::degree(g)) %>% group_by(degree) %>% summarise(n=n()) %>%
+  ggplot()+
+  geom_point(aes(x=degree,y=n), color="salmon1",show.legend = F)+
+  ggtitle("Small-world network degree distribution")+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank())
+  
+
+```
+
+
+Calculate the measure of small-worldness [@Neal2017]
 
 $\sigma ={\frac {\frac {C}{C_{r}}}{\frac {L}{L_{r}}}}$
-
-
 
 $\omega ={\frac {L_{r}}{L}}-{\frac {C}{C_{\ell }}}$
 
 The concept of complexity [@Strogatz2001a]. 
 
+### From Regular to Random.
+
+What is the measurment of randomness?
+
+Between Regularity and Randomness is where complexity is emerging.
+
 # The Barabasi-Albert model
 
 ```{r}
-g <- sample_pa(10000)
+g <- sample_pa(1000)
+data_frame(degree=igraph::degree(g)) %>% group_by(degree) %>% summarise(n=n()) %>%
+  ggplot()+
+  geom_point(aes(x=degree,y=n), color="salmon1",show.legend = F)+
+  ggtitle("Barabasi-Albert network degree distribution")+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank())
 
 ```
 
-
+The rich gets richer method. 
 
 # Dynamic systems on networks
 
