@@ -228,6 +228,8 @@ ggplot()+
 
 # Small-world network
 
+Introduced by [@Watts1998]
+
 ```{r}
 g <- sample_smallworld(1, 100, 5, 0.05)
 
@@ -240,7 +242,16 @@ make_lattice(c(5, 5, 5))
 
 ```
 
-The concept of complexity
+Measure of small-worldness [@Neal2017]
+
+
+$\sigma ={\frac {\frac {C}{C_{r}}}{\frac {L}{L_{r}}}}$
+
+
+
+$\omega ={\frac {L_{r}}{L}}-{\frac {C}{C_{\ell }}}$
+
+The concept of complexity [@Strogatz2001a]. 
 
 # The Barabasi-Albert model
 
@@ -304,6 +315,8 @@ library(WGCNA)
 
 
 ### Bayesian networks
+
+Nice walkthrough in r packages for the inference of bayesian networks from data [@Radhakrishnan2013].
 
 > The task of fitting a Bayesian network is usually called learning, a term borrowed from expert systems theory and artificial intelligence. It is performed in two different steps, which correspond to model selection and parameter estimation techniques in classic statistical models.
 
