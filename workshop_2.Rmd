@@ -340,10 +340,6 @@ check_installation_kegg <- check.packages_bioconductor(packages_KEGG_reactome)
 # load packages
 # Previous packages
 
-packages_workspace <- c("rmarkdown","knitr", "citr")
-packages_data <- c("tidyverse")
-packages_networks <- c("igraph", "ggraph","tidygraph", "bipartite")
-
 # Annotation packages
 
 packages_gene_ontology_bioconductor <- c("AnnotationDbi","RBGL","GO.db","topGO","Rgraphviz","GSEABase")

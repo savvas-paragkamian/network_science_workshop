@@ -95,6 +95,7 @@ Conclusions:
 7. Network analysis of gene ontology as bipartite, as association networks based on terms from real data annotation
 8. Inference network from gene expression data (RNA-seq) and perform the network analysis and gene ontology annotation
 9. Integrating genetic and protein–protein interaction networks maps a functional wiring diagram of a cell
+10. Analyzing complex networks evolution through Information Theory quantifiers
 
 
 # Online material
