@@ -10,7 +10,7 @@ The course contains 4 lectures and one last meeting for student presentations.
 
 1. Thursday 29/11 14:00-17:00 : [Lecture 1](workshop_0.html) - PC-room (E110)
 2. Tuesday 4/12 15:00-18:00 : [Lecture 2](workshop_1.html) - PC-room (E110)
-3. Thursday 6/12 14:00-17:00 : Lecture 3 - PC-room (E110)
+3. Thursday 6/12 14:00-17:00 : [Lecture 3](workshop_2.html) - PC-room (E110)
 4. Tuesday 11/12 14:00-17:00 : [Presentations](#presentations) - Multimedia Room (E141)
 5. Thursday 13/12 14:00-17:00 - PC-room (E110)
 
@@ -34,18 +34,17 @@ The course contains 4 lectures and one last meeting for student presentations.
 
 [HTML](workshop_1.html) -- [Rmarkdown file](workshop_1.Rmd)
 
-## Lecture 3 : Network construction from Models and Data
+## [Lecture 3](workshop_2.html) : Network construction from Models and Data
 
 * models for network creation (random, scale free, small world)
 * percolation theory - robustness
 * network inference from data
 * introduction to dynamic systems on networks
 * gene ontology annotation
-* bipartite networks
-* KEGG pathways annotation
-* reactome annotation
 * neural networks vs networks
 * state of the art in network science
+
+[HTML](workshop_2.html) -- [Rmarkdown file](workshop_2.Rmd)
 
 ## Presentations {#presentations}
 
@@ -89,12 +88,13 @@ Conclusions:
 
 1. Generalize assortativity for every centrality measure and redefine it using information theory
 2. Compare network community detection methods (Modularity vs Information vs Link-based)
-4. Centrality lethality rule using Gene Ontology centralities
-5. Spreading phenomena
-6. Analysis of neural networks as networks
-7. Multiplex networks robustness
-8. Network analysis of gene ontology as bipartite, as association networks based on terms from real data annotation
-9. Inference network from gene expression data (RNA-seq) and perform the network analysis and gene ontology annotation
+3. Centrality lethality rule using Gene Ontology centralities
+4. Spreading phenomena
+5. Analysis of neural networks as networks
+6. Multiplex networks robustness
+7. Network analysis of gene ontology as bipartite, as association networks based on terms from real data annotation
+8. Inference network from gene expression data (RNA-seq) and perform the network analysis and gene ontology annotation
+9. Integrating genetic and protein–protein interaction networks maps a functional wiring diagram of a cell
 
 
 # Online material
