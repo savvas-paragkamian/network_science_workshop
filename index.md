@@ -6,7 +6,7 @@ This workshop is taught by Christoforos Nikolaou and Savvas Paragkamian from [CG
 
 #### Schedule:
 
-The course contains 4 lectures and one last meeting for student presentations.
+The course contains 3 lectures - computer labs and one last meeting for student presentations.
 
 1. Thursday 29/11 14:00-17:00 : [Lecture 1](workshop_0.html) - PC-room (E110)
 2. Tuesday 4/12 15:00-18:00 : [Lecture 2](workshop_1.html) - PC-room (E110)
