@@ -107,7 +107,7 @@ In page 5 of [@Crane2018]:
 
 Definition: one mode networks as graphs
 
-We consider a directed, simple network $G(V,E)$ with a set of $N$ nodes $V$ and an ordered set of edges $E$.
+We consider a directed, simple network $$G(V,E)$$ with a set of $$N$$ nodes $$V$$ and an ordered set of edges $$E$$.
 
 **Assumptions** 
 
@@ -159,7 +159,7 @@ plot(network_edgelist)
 adjacency_matrix_d <- as.data.frame(adjacency_matrix,row.names = T)
 ```
 
-Apart from directed, links can also be weighted, meaning they can contain values. In this example links have a variable called "weights" that is $>0$. Networks that have edge weights are called *weighted* and are a more general form of networks. Weights can be signed and in that case we have the *signed networks*. Signed networks are still challenging because most of the tools of graph theory and network science are compatible with non-negative matrices. 
+Apart from directed, links can also be weighted, meaning they can contain values. In this example links have a variable called "weights" that is $$>0$$. Networks that have edge weights are called *weighted* and are a more general form of networks. Weights can be signed and in that case we have the *signed networks*. Signed networks are still challenging because most of the tools of graph theory and network science are compatible with non-negative matrices. 
 
 ```{r, message=FALSE, warning=FALSE}
 edgelist_df <- as.data.frame(edgelist)
@@ -336,17 +336,17 @@ c_elegans_tidy_graph <- as_tbl_graph(c_elegans_edgelist,directed = T) %>% activa
 
 Number of possible edges in an undirected graph g with n nodes:
 
-$\binom{n}{2}=\frac{n!}{(n-2)!2!} = \frac{n(n-1)}{2}$
+$$\binom{n}{2}=\frac{n!}{(n-2)!2!} = \frac{n(n-1)}{2}$$
 
 A complete graph is the graph that has all possible edges.
 
 The density of a graph is the ratio of the number of edges and the number of possible edges.
 
 for undirected graphs
-$d=\frac{number\ of\ edges}{number\ of\ possible\ edges}=\frac{2e}{n(n-1)}$
+$$d=\frac{number\ of\ edges}{number\ of\ possible\ edges}=\frac{2e}{n(n-1)}$$
 
 for directed graphs
-$d=\frac{number\ of\ edges}{number\ of\ possible\ edges}=\frac{e}{n(n-1)}$
+$$d=\frac{number\ of\ edges}{number\ of\ possible\ edges}=\frac{e}{n(n-1)}$$
 
 *C. elegans* neuronal network has density:
 
@@ -483,7 +483,7 @@ The importance of module detection in biology (from [@Koch2012]):
 Modules in networks:
 > A cluster in a network is intuitively defined as a set of densely connected nodes that is sparsely connected to other clusters in the graph
 
-Finding communities in networks is an optimization problem. For a graph $G(V,E)$ with $n$ nodes there are $2^{n-1}$ ways of dividing them into two components [@Newman2010d]. So in order to tackle this problem many algorithms have been introduced using interdisciplinary methods.
+Finding communities in networks is an optimization problem. For a graph $$G(V,E)$$ with $$n$$ nodes there are $$2^{n-1}$$ ways of dividing them into two components [@Newman2010d]. So in order to tackle this problem many algorithms have been introduced using interdisciplinary methods.
 
 * [Modularity based methods](https://en.wikipedia.org/wiki/Modularity_(networks))
 * Information theory methods - infomap function
@@ -573,7 +573,7 @@ Bottlenecks are the nodes that are located between highly connected clusters and
 
 $$BC(v)=\sum_{s\neq t \neq v \in V}^{} \frac{g_{st}(v)}{g_{st}}$$
 
-where $$$g_{st}$$ is the number of all geodesic directed paths between all pairs of nodes, except pairs with v, and $g_{st}(v)$ is the number of geodesics that pass through node v.
+where $$$g_{st}$$ is the number of all geodesic directed paths between all pairs of nodes, except pairs with v, and $$g_{st}(v)$$ is the number of geodesics that pass through node v.
 
 ```{r, message=FALSE, warning=FALSE}
 # run betweenness
@@ -602,7 +602,7 @@ c_elegans_tidy_graph <- c_elegans_tidy_graph %>% activate(nodes) %>% mutate(clos
 
 From wiki [Clustering coefficient](https://en.wikipedia.org/wiki/Clustering_coefficient)
 
-> The local clustering coefficient$C_{i}$ for a vertex $v_{i}$ is then given by the proportion of links between the vertices within its neighbourhood divided by the number of links that could possibly exist between them.
+> The local clustering coefficient$$C_{i}$$ for a vertex $$v_{i}$$ is then given by the proportion of links between the vertices within its neighbourhood divided by the number of links that could possibly exist between them.
 
 $$C_{i} = \frac{number\ of\ links\ between\ the\ adjacent\ nodes\ of\ v_{i}}{number\ of\ possible\ links\ between\ the\ adjacent\ nodes\ of\ v_{i}}$$
 
@@ -668,7 +668,7 @@ The global clustering coefficient is defined as:
 
 > A triplet consists of three connected nodes. A triangle therefore includes three closed triplets, one centered on each of the nodes (n.b. this means the three triplets in a triangle come from overlapping selections of nodes). The global clustering coefficient is the number of closed triplets (or 3 x triangles) over the total number of triplets (both open and closed).
 
-$${\displaystyle C={\frac {\mbox{number of closed triplets}}{\mbox{number of all triplets (open and closed)}}}}$$
+$$C={\frac {\mbox{number of closed triplets}}{\mbox{number of all triplets (open and closed)}}}$$
 
 ```{r}
 igraph::transitivity(c_elegans_net,type = "global")
@@ -679,7 +679,7 @@ igraph::transitivity(c_elegans_net,type = "global")
 
 How variable or heterogeneous the node centralities are? The centralization of the graph A, with n nodes, for the node centrality C (any centrality) is as defined by [@Freeman1979b; @Wasserman1994]:
 
-$$C(G)= \frac{\displaystyle\sum\limits_{i=1}^n  [(C_{A}(n^*) - C_{A}(n_i)]}{max \displaystyle\sum\limits_{i=1}^n  [(C_{A}(n^*) - C_{A}(n_i)]}$$
+$$C(G)= \frac{\sum\limits_{i=1}^n  [(C_{A}(n^*) - C_{A}(n_i)]}{max \sum\limits_{i=1}^n  [(C_{A}(n^*) - C_{A}(n_i)]}$$
 
 where $$(C_{A}(n^*)$$ is the maximum observed value of the centrality, $$C_{A}(n_i)]$$ is the centrality value of i node, and the $$max \displaystyle\sum\limits_{i=1}^n  [(C_{A}(n^*) - C_{A}(n_i)]$$ is the normalizing denominator which is the theoretical maximum possible sum of differences. The latter is dependent on the type of centrality, the directionality etc which means that a different theoretical graph is used each of these cases (e.g for degree centrality the theoretical maximum is the star graph).
 
@@ -716,9 +716,9 @@ From [Assortativity in wiki](https://en.wikipedia.org/wiki/Assortativity)
 
 $$r = \frac{\sum_{jk}{jk (e_{jk} - q_j q_k)}}{\sigma_{q}^{2}}$$
 
-The term $$q_{{k}}$$ is the distribution of the remaining degree. This captures the number of edges leaving the node, other than the one that connects the pair. The distribution of this term is derived from the degree distribution $$p_{{k}}$$ as $${\displaystyle q_{k}={\frac {(k+1)p_{k+1}}{\sum _{j\geq 1}jp_{j}}}}$$. Finally,
+The term $$q_{{k}}$$ is the distribution of the remaining degree. This captures the number of edges leaving the node, other than the one that connects the pair. The distribution of this term is derived from the degree distribution $$p_{{k}}$$ as $$q_{k}={\frac {(k+1)p_{k+1}}{\sum _{j\geq 1}jp_{j}}}$$. Finally,
 $$e_{{jk}}$$ refers to the joint probability distribution of the remaining degrees of the two vertices. This quantity is symmetric on an undirected graph, and follows the sum rules 
-$$\sum_{jk}{e_{jk}} = 1\,$$ and $$\sum_{j}{e_{jk}} = q_{k}\,$$.
+$$\sum_{jk}{e_{jk}} = 1\,$$ and $$\sum_{j}{e_{jk}} = q_{k}\$$.
 
 ```{r, message=FALSE, warning=FALSE}
 

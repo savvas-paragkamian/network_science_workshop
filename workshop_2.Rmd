@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r, message=FALSE, warning=FALSE}
-packages_workspace <- c("rmarkdown","knitr", "citr")
+packages_workspace <- c("citr","knitr", "rmarkdown")
 packages_data <- c("tidyverse")
 packages_networks <- c("igraph", "ggraph","tidygraph", "bipartite")
 
@@ -159,9 +159,9 @@ erdos_renyi_df <- erdos_renyi_parameters(nodes,iterations,directed,loops,max_pro
 
 Random networks expected value is determined by N and p. If we increase p a random network becomes denser: The average number of links increase linearly from ‹L› = 0 to Lmax and the average degree of a node increases from ‹k› = 0 to ‹k› = N-1 [@Barabasi2015].
 
-$<L>=p\frac{N(N-1)}{2}$,
+$$<L>=p\frac{N(N-1)}{2}$$
 
-$<k>=p(N-1)$
+$$<k>=p(N-1)$$
 
 
 ```{r}
@@ -261,12 +261,12 @@ Algorithm for small-world from Wikipedia
 
 1. Construct a regular ring lattice, a graph with N nodes each connected to K neighbors, K/2 on each side. That is, if the nodes are labeled $n_{0}\ldots n_{{N-1}}$, there is an edge $(n_{i},n_{j})$ if and only if 
 
-${\displaystyle 0<|i-j|\ \mathrm {mod} \ \left(N-1-{\frac {K}{2}}\right)\leq {\frac {K}{2}}.}$
+$$ 0<|i-j|\ \mathrm {mod} \ \left(N-1-{\frac {K}{2}}\right)\leq {\frac {K}{2}} $$
 
-2. For every node $n_{i}=n_{0},\dots ,n_{{N-1}}$ take every edge connecting $n_{i}$ to its $K/2$ rightmost neighbors, that is every edge 
-${\displaystyle (n_{i},n_{j}\ \mathrm {mod} \ N)}$ with 
-${\displaystyle n_{i}<n_{j}\leq n_{i}+K/2}$, and rewire it with probability $\beta$. Rewiring is done by replacing
-${\displaystyle (n_{i},n_{j}\ \mathrm {mod} \ N)}$ with $(n_{i},n_{k})$ where k is chosen uniformly at random from all possible nodes while avoiding self-loops $(k\neq i)$ and link duplication (there is no edge $(n_{i},n_{{k'}})$ with k'=k at this point in the algorithm).
+2. For every node $$n_{i}=n_{0},\dots ,n_{{N-1}}$$ take every edge connecting $$n_{i}$$ to its $$K/2$$ rightmost neighbors, that is every edge 
+$$(n_{i},n_{j}\ \mathrm {mod} \ N)$$ with 
+$$ n_{i}<n_{j}\leq n_{i}+K/2 $$, and rewire it with probability $\beta$. Rewiring is done by replacing
+$$ (n_{i},n_{j}\ \mathrm {mod} \ N)$$ with $$(n_{i},n_{k})$$ where k is chosen uniformly at random from all possible nodes while avoiding self-loops $$(k\neq i)$$ and link duplication (there is no edge $$(n_{i},n_{{k'}})$$ with k'=k at this point in the algorithm).
 
 Degrees of the lattice
 
@@ -318,9 +318,9 @@ data_frame(degree=igraph::degree(g)) %>% group_by(degree) %>% summarise(n=n()) %
 
 Calculate the measure of small-worldness [@Neal2017]
 
-$\sigma ={\frac {\frac {C}{C_{r}}}{\frac {L}{L_{r}}}}$
+$$\sigma ={\frac {\frac {C}{C_{r}}}{\frac {L}{L_{r}}}}$$
 
-$\omega ={\frac {L_{r}}{L}}-{\frac {C}{C_{\ell }}}$
+$$\omega ={\frac {L_{r}}{L}}-{\frac {C}{C_{\ell }}}$$
 
 The concept of complexity [@Strogatz2001a]. 
 
