@@ -23,6 +23,8 @@ The course contains 4 lectures and one last meeting for student presentations.
 * random networks
 * scale-free networks
 
+[HTML](workshop_0.html)
+
 ## [Lecture 2](workshop_1.html) : Network descriptives
 
 * workspace and workflow introduction
