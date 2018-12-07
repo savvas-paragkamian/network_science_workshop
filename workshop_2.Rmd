@@ -44,7 +44,7 @@ To construct an undirected random network (Erdos-Renyi and Gilbert models) we fo
 
 # An over-simplified version for the creation of the random graph.
 
-n=100
+n=10
 p=0.2
 
 custom_random_net <- function(n,p) {
@@ -148,7 +148,7 @@ Run the function to see the differences that arise with the change of probabilit
 ```{r}
 nodes <- 1000
 iterations <-1000
-max_prob <- 0.005
+max_prob <- 0.1
 directed <- FALSE
 loops <- FALSE
 
@@ -252,8 +252,8 @@ Lattice, maximum order.
 ```{r}
 lattice <- make_lattice(length = 100, dim = 1,nei = 2,circular = T)
 
-plot(make_lattice(length = 4, dim = 2,nei = 2,circular = F),main="Example of lattice which is not circular")
-plot(make_lattice(length = 4, dim = 1,nei = 2,circular = T),main="Example of lattice which is circular")
+plot(make_lattice(length = 4, dim = 2,nei = 1,circular = F),main="Example of lattice which is not circular")
+plot(make_lattice(length = 4, dim = 2,nei = 1,circular = T),main="Example of lattice which is circular")
 
 ```
 
@@ -269,6 +269,7 @@ ${\displaystyle n_{i}<n_{j}\leq n_{i}+K/2}$, and rewire it with probability $\be
 ${\displaystyle (n_{i},n_{j}\ \mathrm {mod} \ N)}$ with $(n_{i},n_{k})$ where k is chosen uniformly at random from all possible nodes while avoiding self-loops $(k\neq i)$ and link duplication (there is no edge $(n_{i},n_{{k'}})$ with k'=k at this point in the algorithm).
 
 Degrees of the lattice
+
 ```{r}
 igraph::degree(lattice)
 ```
@@ -539,7 +540,7 @@ check.packages_bioconductor <- function(pkg){
 # Check installation
 
 check_installation_bio <- check.packages_bioconductor(packages_gene_ontology_bioconductor)
-check_installation_kegg <- check.packages_bioconductor(packages_KEGG_reactome)
+#check_installation_kegg <- check.packages_bioconductor(packages_KEGG_reactome)
 
 ```
 
@@ -550,9 +551,9 @@ check_installation_kegg <- check.packages_bioconductor(packages_KEGG_reactome)
 # Annotation packages
 
 packages_gene_ontology_bioconductor <- c("AnnotationDbi","RBGL","GO.db","topGO","Rgraphviz","GSEABase")
-packages_KEGG_reactome <- c("KEGGgraph","KEGG.db","KEGGREST")
+#packages_KEGG_reactome <- c("KEGGgraph","KEGG.db","KEGGREST")
 
-packages_Lab <- c(packages_workspace,packages_data,packages_networks,packages_gene_ontology_bioconductor,packages_KEGG_reactome)
+packages_Lab <- c(packages_workspace,packages_data,packages_networks,packages_gene_ontology_bioconductor)
 
 packages_Lab_load <- lapply(packages_Lab,library,character.only=TRUE)
 ```
