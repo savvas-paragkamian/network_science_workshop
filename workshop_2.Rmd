@@ -367,8 +367,8 @@ destroy_method <- as.character(destroy_method)
 nodes <- vcount(g)
 
 V(g)$name <- rep(x = 1:nodes)
- destroy_net_df <- data.frame(matrix(ncol = 7,nrow = nodes))
-  colnames(destroy_net_df) <- c("nodes","giant_component_size","nclusters","n_edges","mean_degree","average_clustering","average_path")
+ destroy_net_df <- data.frame(matrix(ncol = 8,nrow = nodes))
+  colnames(destroy_net_df) <- c("nodes","giant_component_size","nclusters","n_edges","mean_degree","average_clustering","average_path", "iteration")
 
 if (destroy_method=="random") {
   
@@ -378,13 +378,14 @@ if (destroy_method=="random") {
   
   clusters_network <- clusters(g)
 
-  destroy_net_df[i,1] <- vcount(g)
+  destroy_net_df[i,1] <- as.numeric(vcount(g))
   destroy_net_df[i,2] <- max(clusters_network$csize)
   destroy_net_df[i,3] <- clusters_network$no
   destroy_net_df[i,4] <- ecount(g)
   destroy_net_df[i,5] <- mean(igraph::degree(g))
   destroy_net_df[i,6] <- transitivity(g,type = "average")
   destroy_net_df[i,7] <- average.path.length(g)
+  destroy_net_df[i,8] <- i
   
   g <- delete_vertices(graph = g,v = paste0(delete_node))
   
@@ -398,13 +399,14 @@ if (destroy_method=="random") {
   max_destroy_method_nodes <- as.character(V(g)[degree ==max(V(g)$degree)]$name)
   
   clusters_network <- clusters(g)
-  destroy_net_df[i,1] <- vcount(g)
+  destroy_net_df[i,1] <- as.numeric(vcount(g))
   destroy_net_df[i,2] <- max(clusters_network$csize)
   destroy_net_df[i,3] <- clusters_network$no
   destroy_net_df[i,4] <- ecount(g)
   destroy_net_df[i,5] <- mean(igraph::degree(g))
   destroy_net_df[i,6] <- transitivity(g,type = "global")
   destroy_net_df[i,7] <- average.path.length(g)
+  destroy_net_df[i,8] <- i
   
   if (length(max_destroy_method_nodes)>1) {
     
@@ -433,41 +435,57 @@ if (destroy_method=="random") {
 
 ```{r}
 
-# Destroy based on degree and random
-g_barabasi <- sample_pa(1000)
+# Destroy based on degree and randomly
+g_barabasi <- sample_pa(1000,directed = F)
 V(g_barabasi)$degree <- igraph::degree(g)
 
 
-destroy_barabasi_net_degree <- destroy_net(g_barabasi,"degree") %>% mutate(fraction_removed=nodes/max(nodes), fraction_giant_comp=giant_component_size/max(nodes))
-destroy_barabasi_net_random <- destroy_net(g_barabasi,"random") %>% mutate(fraction_removed=nodes/max(nodes), fraction_giant_comp=giant_component_size/max(nodes))
+destroy_barabasi_net_degree <- destroy_net(g_barabasi,"degree") %>% mutate(fraction_removed = (max(nodes,na.rm = T)-nodes)/max(nodes,na.rm = T), fraction_giant_comp=giant_component_size/max(nodes,na.rm = T))
+
+
+destroy_barabasi_net_random <- destroy_net(g_barabasi,"random") %>% mutate(fraction_removed = (max(nodes,na.rm = T)-nodes)/max(nodes,na.rm = T), fraction_giant_comp=giant_component_size/max(nodes,na.rm = T))
 
 # random net
 
-g_random <- sample_gnp(n = 1000,p = 0.01,directed = F,loops = F)
+g_random <- sample_gnm(n = vcount(g_barabasi),m = ecount(g_barabasi),directed = F,loops = F)
 V(g_random)$degree <- igraph::degree(g)
 
 
-destroy_random_net_degree <- destroy_net(g_random,"degree") 
+destroy_random_net_degree <- destroy_net(g_random,"degree") %>% mutate(fraction_removed = (max(nodes,na.rm = T)-nodes)/max(nodes,na.rm = T), fraction_giant_comp=giant_component_size/max(nodes,na.rm = T))
 
 
-destroy_random_net_random <- destroy_net(g_random,"random") 
-
+destroy_random_net_random <- destroy_net(g_random,"random") %>% mutate(fraction_removed = (max(nodes,na.rm = T)-nodes)/max(nodes,na.rm = T), fraction_giant_comp=giant_component_size/max(nodes,na.rm = T) )
 
 ```
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 ggplot()+
-  geom_point(data = destroy_barabasi_net_degree,aes(x=nodes,y=giant_component_size, color="destroy_barabasi_net_degree"),show.legend = T)+
-  geom_point(data = destroy_barabasi_net_random,aes(x=nodes,y=giant_component_size, color="destroy_barabasi_net_random"),show.legend = T)+
-  geom_point(data = destroy_random_net_degree,aes(x=nodes,y=giant_component_size, color="destroy_random_net_degree"),show.legend = T)+
-  geom_point(data = destroy_random_net_random,aes(x=nodes,y=giant_component_size, color="destroy_random_net_random"),show.legend = T)+
-  scale_colour_manual(values = c("destroy_barabasi_net_degree"="palegreen2","destroy_barabasi_net_random"="darkorange2","destroy_random_net_degree"="orangered4","destroy_random_net_random"="steelblue3"))+
+  geom_point(data = destroy_barabasi_net_degree,aes(x=nodes,y=giant_component_size, color="Barabasi net : degree"),show.legend = T)+
+  geom_point(data = destroy_barabasi_net_random,aes(x=nodes,y=giant_component_size, color="Barabasi net : random"),show.legend = T)+
+  geom_point(data = destroy_random_net_degree,aes(x=nodes,y=giant_component_size, color="ER net : degree"),show.legend = T)+
+  geom_point(data = destroy_random_net_random,aes(x=nodes,y=giant_component_size, color="ER net : random"),show.legend = T)+
+  scale_colour_manual(values = c("Barabasi net : degree"="palegreen2","Barabasi net : random"="darkorange2","ER net : degree"="orangered4","ER net : random"="steelblue3"))+
   ggtitle("Robustness")+
   labs(x="nodes", y= "fraction_giant_comp")+
   theme_bw()+
   scale_x_reverse()+
   theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(),legend.title = element_blank())
 
+
+```
+
+
+```{r, message=FALSE, warning=FALSE}
+ggplot()+
+  geom_point(data = destroy_barabasi_net_degree,aes(x=fraction_removed,y=fraction_giant_comp, color="destroy_barabasi_net_degree"),show.legend = T)+
+  geom_point(data = destroy_barabasi_net_random,aes(x=fraction_removed,y=fraction_giant_comp, color="destroy_barabasi_net_random"),show.legend = T)+
+  geom_point(data = destroy_random_net_degree,aes(x=fraction_removed,y=fraction_giant_comp, color="destroy_random_net_degree"),show.legend = T)+
+  geom_point(data = destroy_random_net_random,aes(x=fraction_removed,y=fraction_giant_comp, color="destroy_random_net_random"),show.legend = T)+
+  scale_colour_manual(values = c("destroy_barabasi_net_degree"="palegreen2","destroy_barabasi_net_random"="darkorange2","destroy_random_net_degree"="orangered4","destroy_random_net_random"="steelblue3"))+
+  ggtitle("Robustness")+
+  labs(x="Fraction of nodes removed", y= "Fraction of giant component")+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(),legend.title = element_blank())
 
 ```
 
@@ -524,7 +542,7 @@ Integrating genetic and protein–protein interaction networks maps a functional
 Infering networks from time series data is multiple step proccess (removal of autocorrelations, fitting ARIMA model etc) [@Kantz]. Mostly correlation methods are used but neural networks [@Silva2016] have been used also. See [@Kolaczyk2009a] for nice tutorials. For EEG and brain networks see [@Rubinov2010b].
 
 
-# Strong connected
+# Gene Ontology
 
 ```{r, message=FALSE, warning=FALSE, eval=FALSE}
 
@@ -558,8 +576,6 @@ packages_Lab <- c(packages_workspace,packages_data,packages_networks,packages_ge
 packages_Lab_load <- lapply(packages_Lab,library,character.only=TRUE)
 ```
 
-
-# Gene Ontology
 
 In large scale analyses genes and/or proteins are used as statistical objects. This approach can be enriched with existing knowledge for each gene-protein in order to obtain more insightful and biologicaly relevant results. This is a way of combining knowledge from single gene/protein genetic and biochemical research with the holistic approach of big data. This unification is facilitated by Gene Ontology [@Ashburner2000c]. 
 
@@ -728,22 +744,8 @@ summary(showSigOfNodes_igraph)
 
 ```
 
-```{r, message=FALSE, warning=FALSE, echo=FALSE, eval=FALSE}
 
-ggraph(showSigOfNodes_igraph, 'igraph', algorithm = 'tree') + 
-  geom_edge_link(edge_width=0.2, arrow = arrow(length = unit(0.8, 'mm')), 
-                   end_cap = circle(0.8, 'mm'), aes(),colour = "steelblue") + 
-  geom_node_point(size=0.5, aes(),color="red")+
-  geom_node_text(aes(label = name), color = 'black', size = 3) +
-  #ggtitle("GO graph of the significant terms of essential cluster")+
-  theme_graph()+
-  theme(text=element_text(size=10, family="Courier"))+
-  theme(plot.title = element_text(size=12, vjust=1,family="Courier"))
-
-```
-
-
-All these test share the same assumption for the null hypothesis, that the probabilities for the selection of each gene are equal [@Rivals2007]. But it turns out that thay are not because the structure of gene ontology bipartite network of genes and gene terms has a heavy tail distribution and hence these tests are biased to high degree terms [@Glass2014]. 
+Allthese test share the same assumption for the null hypothesis, that the probabilities for the selection of each gene are equal [@Rivals2007]. But it turns out that thay are not because the structure of gene ontology bipartite network of genes and gene terms has a heavy tail distribution and hence these tests are biased to high degree terms [@Glass2014]. 
 
 [Nice explanation to the biases of gene ontology](http://khughitt.github.io/slidify-annotation_enrichment_analysis/#1)
 
