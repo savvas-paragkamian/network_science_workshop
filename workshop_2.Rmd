@@ -656,6 +656,16 @@ Escherichia_coli_biogrid_physical_association_proteins <- as.character(unique(c(
 
 ```
 
+For homo sapiens
+```{r}
+
+# data from Biogrid
+homosapiens_biogrid <- read.delim(file = "Data/BIOGRID-ORGANISM-Homo_sapiens-3.5.167.mitab.txt",sep = "\t",header = T) %>% mutate(InteractorA_entrez=gsub("(.*):(.*)","\\2",X.ID.Interactor.A), InteractorB_entrez=gsub("(.*):(.*)","\\2",ID.Interactor.B))
+
+
+```
+
+
 ## Identifiers with AnnotationDPi
 
 Organism specific.
@@ -674,6 +684,7 @@ library(org.EcK12.eg.db)
 my_map <- org.EcK12.eg.db
 
 columns(org.EcK12.eg.db)
+
 keys_entrez <- keys(org.EcK12.eg.db,keytype = "ENTREZID")
 
 Escherichia_coli_ENTREZID_symbol <- AnnotationDbi::select(org.EcK12.eg.db, keys=keys_entrez, columns = c("ENTREZID","SYMBOL")) %>% mutate(PPI= ENTREZID %in% Escherichia_coli_biogrid_physical_association_proteins)
@@ -735,7 +746,7 @@ showSigOfNodes <- showSigOfNodes(sampleGOdata, score(resultFisher), firstSigNode
 # it induces the GO graph with the quered IDs. 
 showSigOfNodes
 
-printGraph(sampleGOdata, resultFisher, firstSigNodes = 10, useInfo = 'all',fn.prefix = "Gene Ontology enriched terms", pdfSW = TRUE)
+printGraph(sampleGOdata, resultFisher, firstSigNodes = 20, useInfo = 'all',fn.prefix = "Gene Ontology enriched terms", pdfSW = TRUE)
 
 showSigOfNodes_igraph <- graph_from_graphnel(showSigOfNodes$dag, name = TRUE, weight = TRUE,
   unlist.attrs = TRUE)
