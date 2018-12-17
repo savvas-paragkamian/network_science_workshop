@@ -85,7 +85,7 @@ As the probability increases so does the size of the giant component.
 
 plots <- 10
 nodes <- 100
-max_prob <- 0.02
+max_prob <- 0.01
 directed <- FALSE
 loops <- FALSE
 
@@ -130,7 +130,7 @@ erdos_renyi_parameters <- function(nodes,iterations,directed,loops,max_prob) {
     erdos_renyi_df[i,6] <- loops
     erdos_renyi_df[i,7] <- ecount(erdos_renyi)
     erdos_renyi_df[i,8] <- mean(igraph::degree(erdos_renyi))
-    erdos_renyi_df[i,9] <- transitivity(erdos_renyi,type = "average")
+    erdos_renyi_df[i,9] <- igraph::transitivity(erdos_renyi,type = "average")
     erdos_renyi_df[i,10] <- average.path.length(erdos_renyi)
     rm(clusters_network,erdos_renyi)
   
@@ -146,9 +146,9 @@ erdos_renyi_parameters <- function(nodes,iterations,directed,loops,max_prob) {
 Run the function to see the differences that arise with the change of probability. 
 
 ```{r}
-nodes <- 1000
+nodes <- 100
 iterations <-1000
-max_prob <- 0.1
+max_prob <- 0.06
 directed <- FALSE
 loops <- FALSE
 
@@ -383,7 +383,7 @@ if (destroy_method=="random") {
   destroy_net_df[i,3] <- clusters_network$no
   destroy_net_df[i,4] <- ecount(g)
   destroy_net_df[i,5] <- mean(igraph::degree(g))
-  destroy_net_df[i,6] <- transitivity(g,type = "average")
+  destroy_net_df[i,6] <- tranigraph::sitivity(g,type = "average")
   destroy_net_df[i,7] <- average.path.length(g)
   destroy_net_df[i,8] <- i
   
@@ -404,8 +404,7 @@ if (destroy_method=="random") {
   destroy_net_df[i,3] <- clusters_network$no
   destroy_net_df[i,4] <- ecount(g)
   destroy_net_df[i,5] <- mean(igraph::degree(g))
-  destroy_net_df[i,6] <- transitivity(g,type = "global")
-  destroy_net_df[i,7] <- average.path.length(g)
+  destroy_net_df[i,6] <- tranigraph::transitivity(g,type = "average destroy_net_df[i,7] <- average.path.length(g)
   destroy_net_df[i,8] <- i
   
   if (length(max_destroy_method_nodes)>1) {
