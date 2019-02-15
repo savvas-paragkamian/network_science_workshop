@@ -91,10 +91,10 @@ Conclusions:
 1. Generalize assortativity for every centrality measure and redefine it using information theory
 2. Compare network community detection methods (Modularity vs Information vs Link-based) and their applications in biology
 3. Centrality lethality rule using Gene Ontology centralities
-4. Spreading phenomena - dynamics Stefanos 
+4. Spreading phenomena - dynamics
 5. Analysis of neural networks as networks (strongly connected components)
-6. Multiplex networks robustness - Lydia
-7. Network analysis of gene ontology as bipartite, as association networks based on terms from real data annotation Konstantinos
+6. Multiplex networks robustness
+7. Network analysis of gene ontology as bipartite, as association networks based on terms from real data annotation
 8. Inference network from gene expression data and perform the network analysis and gene ontology annotation
 9. Integrating genetic and protein–protein interaction networks maps a functional wiring diagram of a cell
 10. Analyzing complex networks evolution through Information Theory quantifiers
