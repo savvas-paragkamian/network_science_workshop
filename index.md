@@ -9,7 +9,7 @@ Network Science in [Bioinformatics MSc Program](https://bioinfo-grad.gr), Univer
 
 ###  Network Basics
 
-#### [Background](workshop_1.html)
+#### Part 1. [Background](workshop_1.html)
 * what are networks?
 * complexity science
 * networks in biology
@@ -18,7 +18,7 @@ Network Science in [Bioinformatics MSc Program](https://bioinfo-grad.gr), Univer
 * networks as graphs - basics
 * network distributions
 
-#### [Workshop](workshop_1.html)
+#### Part 2. [Workshop](workshop_1.html)
 
 * workspace and workflow introduction
 * graphs as mathematical objects and their representation
@@ -30,7 +30,7 @@ Network Science in [Bioinformatics MSc Program](https://bioinfo-grad.gr), Univer
 
 ### From -omics data to Networks
 
-#### Background
+#### Part 1. Background
 
 * types of omics data
 * molecular ecology
@@ -39,7 +39,7 @@ Network Science in [Bioinformatics MSc Program](https://bioinfo-grad.gr), Univer
 * network inference
 * case study: soil metagenomics
 
-#### [Workshop](workshop_2.html)
+#### Part 2. [Workshop](workshop_2.html)
 
 * import data from database
 * network inference from data
