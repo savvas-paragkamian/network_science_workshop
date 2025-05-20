@@ -1,10 +1,52 @@
 ## Info
 
-Fall of 2018, [Bioinformatics MSc Program](https://bioinfo-grad.gr), University of Crete
+Network Science in [Bioinformatics MSc Program](https://bioinfo-grad.gr), University of Crete
 
-This workshop is taught by Prof Christoforos Nikolaou and Savvas Paragkamian from [CG<sup>2</sup> Lab](http://computational-genomics.weebly.com).
+## Schedule - Course of Spring 2025:
 
-#### Schedule:
+1. Wednesday 21/05 11:00-14:00 : [Lecture 1](workshop_1.html) - 7Α-01
+2. Wednesday 28/05 11:00-14:00 : [Lecture 2](workshop_2.html) - 7Α-01
+
+###  Network Basics
+
+#### [Background](workshop_1.html)
+* what are networks?
+* complexity science
+* networks in biology
+* Large Language Models
+* types of networks
+* networks as graphs - basics
+* network distributions
+
+#### [Workshop](workshop_1.html)
+
+* workspace and workflow introduction
+* graphs as mathematical objects and their representation
+* models for network creation (random, scale free, small world)
+* introduction to dynamic systems on networks
+* network descriptives
+* mesoscale analysis of networks
+* importance of nodes - centralities
+
+### From -omics data to Networks
+
+#### Background
+
+* types of omics data
+* molecular ecology
+* large scale expeditions
+* data standards
+* network inference
+* case study: soil metagenomics
+
+#### [Workshop](workshop_2.html)
+
+* import data from database
+* network inference from data
+* hairballs
+* percolation theory - robustness
+
+## Schedule - Course of Fall 2018:
 
 The course contains 3 lectures - computer labs and one last meeting for student presentations.
 
@@ -15,6 +57,7 @@ The course contains 3 lectures - computer labs and one last meeting for student 
 5. Thursday 13/12 14:00-17:00 : [Presentations](#presentations) - Multimedia Room (E141)
 
 ## [Lecture 1](workshop_0.html) : Introduction
+Material created by Dr Christoforos Nikolaou, Group Leader of [CG<sup>2</sup> Lab](http://computational-genomics.weebly.com)
 
 * what are networks?
 * networks in biology
@@ -102,6 +145,7 @@ Conclusions:
 
 # Online material
 
+* Networks [Book](https://global.oup.com/academic/product/networks-9780198805090?cc=gr&lang=en&) by Mark Newman
 * Network Science [Book](http://networksciencebook.com) by Albert-László Barabási
 * Nice network analysis and visualization introduction tutorial [Katherine Ognyanova](http://kateto.net/network-visualization)
 * Brief introduction [Introduction to Network Analysis with R](https://www.jessesadler.com/post/network-analysis-with-r/)
