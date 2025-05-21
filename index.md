@@ -2,9 +2,9 @@
 
 Network Science in [Bioinformatics MSc Program](https://bioinfo-grad.gr), University of Crete
 
-## Schedule - Course of Spring 2025:
+## Schedule - BC204 Course of Spring 2025:
 
-1. Wednesday 21/05 11:00-14:00 : [Lecture 1](workshop_1.html) - 7Α-01
+1. Wednesday 21/05 11:00-14:00 : [Lecture 1](workshop_network_basics.html) - 7Α-01
 2. Wednesday 28/05 11:00-14:00 : [Lecture 2](workshop_2.html) - 7Α-01
 
 ###  Network Basics
@@ -18,7 +18,7 @@ Network Science in [Bioinformatics MSc Program](https://bioinfo-grad.gr), Univer
 * networks as graphs - basics
 * network distributions
 
-#### Part 2. [Workshop](workshop_1.html)
+#### Part 2. [Workshop](workshop_network_basics.html)
 
 * workspace and workflow introduction
 * graphs as mathematical objects and their representation
