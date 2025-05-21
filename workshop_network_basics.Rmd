@@ -1,5 +1,5 @@
 ---
-title: "Network Science Lab 1: Basic concepts and workflow of network analysis"
+title: "Network Science Workshop 1: Basic concepts and workflow of network analysis"
 date: '`r Sys.Date()`'
 output: 
   html_document:
@@ -45,8 +45,7 @@ There are many packages for network analysis that have overlapping functionality
 # Packages
 packages_workspace <- c("rmarkdown","knitr")
 packages_data <- c("tidyverse")
-packages_networks <- c("igraph", "ggraph","tidygraph", "bipartite")
-packages_gene_annotation_bioconductor <- c("org.Dm.eg.db","org.Mm.eg.db","org.Sc.sgd.db") #http://genomicsclass.github.io/book/pages/annoCheat.html
+packages_networks <- c("igraph", "ggraph","tidygraph")
 
 packages_Lab_1 <- c(packages_workspace,packages_data,packages_networks)
 ```
@@ -61,26 +60,20 @@ check.packages_cran <- function(pkg){
         install.packages(new.pkg, dependencies = TRUE)
     sapply(pkg, library, character.only = TRUE)
 }
-
-
-
-check.packages_bioconductor <- function(pkg){
-    
-    if (!requireNamespace("BiocManager"))
-    install.packages("BiocManager")
-    new.pkg <- pkg[!(pkg %in%library()[]$result[,1])]
-    if (length(new.pkg)) 
-        BiocManager::install(new.pkg,version = "3.8")
-    sapply(pkg, library, character.only = TRUE)
-}
-
-
-# Check installation
-
 check_installation_lab_1 <- check.packages_cran(packages_Lab_1)
 
-#check_installation_bio <- check.packages_bioconductor(packages_gene_ontology_bioconductor)
+#check.packages_bioconductor <- function(pkg){
+#    
+#    if (!requireNamespace("BiocManager"))
+#    install.packages("BiocManager")
+#    new.pkg <- pkg[!(pkg %in%library()[]$result[,1])]
+#    if (length(new.pkg)) 
+#        BiocManager::install(new.pkg,version = "3.8")
+#    sapply(pkg, library, character.only = TRUE)
+#}
 
+# Check installation
+#check_installation_bio <- check.packages_bioconductor(packages_gene_ontology_bioconductor)
 
 ```
 
@@ -199,7 +192,7 @@ There are many databases with real biological networks.
 ## Protein - Protein interactions
 
 ```{r}
-
+### for windows users please modify the path accordingly
 Escherichia_coli_biogrid <- read.delim(file = "Data/BIOGRID-ORGANISM-Escherichia_coli_K12_W3110-3.5.165.mitab.txt",sep = "\t",header = T)
 
 colnames(Escherichia_coli_biogrid)
