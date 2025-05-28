@@ -2,14 +2,17 @@
 
 Network Science in [Bioinformatics MSc Program](https://bioinfo-grad.gr), University of Crete
 
-## Schedule - BC204 Course of Spring 2025:
+## BC204 Course of Spring 2025:
 
-1. Wednesday 21/05 11:00-14:00 : [Lecture 1](workshop_network_basics.html) - 7Α-01
-2. Wednesday 28/05 11:00-14:00 : [Lecture 2](workshop_2.html) - 7Α-01
+### Material
+[Presentation](2025_network_science_basics_presentation.pdf)
 
-###  Network Basics
+[Workshop](workshop_network_basics.html)
 
-#### Part 1. [Background](2025_network_science_basics_presentation.pdf)
+### Wednesday 21/05 11:00-14:00 - 7Α-01
+
+#### Background: Network basics
+
 * what are networks?
 * complexity science
 * networks in biology
@@ -18,7 +21,7 @@ Network Science in [Bioinformatics MSc Program](https://bioinfo-grad.gr), Univer
 * networks as graphs - basics
 * network distributions
 
-#### Part 2. [Workshop](workshop_network_basics.html)
+#### On hands Workshop
 
 * workspace and workflow introduction
 * graphs as mathematical objects and their representation
@@ -28,9 +31,9 @@ Network Science in [Bioinformatics MSc Program](https://bioinfo-grad.gr), Univer
 * mesoscale analysis of networks
 * importance of nodes - centralities
 
-### From -omics data to Networks
+### Wednesday 28/05 11:00-14:00 - 7Α-01
 
-#### Part 1. [Background](2025_network_science_basics_presentation.pdf)
+#### From -omics data to Networks
 
 * types of omics data
 * molecular ecology
@@ -39,7 +42,7 @@ Network Science in [Bioinformatics MSc Program](https://bioinfo-grad.gr), Univer
 * network inference
 * case study: soil metagenomics
 
-#### Part 2. [Workshop](workshop_network_basics.html)
+#### On hands Workshop
 
 * import data from database
 * network inference from data
