@@ -7,11 +7,9 @@ Network Science in [Bioinformatics MSc Program](https://bioinfo-grad.gr), Univer
 1. Wednesday 21/05 11:00-14:00 : [Lecture 1](workshop_network_basics.html) - 7Α-01
 2. Wednesday 28/05 11:00-14:00 : [Lecture 2](workshop_2.html) - 7Α-01
 
-The presentation of both courses is [here](2025_network_science_basics_presentation.pdf)
-
 ###  Network Basics
 
-#### Part 1. [Background](workshop_1.html)
+#### Part 1. [Background](2025_network_science_basics_presentation.pdf)
 * what are networks?
 * complexity science
 * networks in biology
@@ -32,7 +30,7 @@ The presentation of both courses is [here](2025_network_science_basics_presentat
 
 ### From -omics data to Networks
 
-#### Part 1. Background
+#### Part 1. [Background](2025_network_science_basics_presentation.pdf)
 
 * types of omics data
 * molecular ecology
@@ -41,7 +39,7 @@ The presentation of both courses is [here](2025_network_science_basics_presentat
 * network inference
 * case study: soil metagenomics
 
-#### Part 2. [Workshop](workshop_2.html)
+#### Part 2. [Workshop](workshop_network_basics.html)
 
 * import data from database
 * network inference from data
