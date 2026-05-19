@@ -867,232 +867,194 @@ thr_stats |>
 
 # Part 5 · Networks as Computation `[~40 min]`
 
-> **Goal**: Recognise deep learning models as directed weighted graphs and apply the same structural questions we asked all day — degree, density, topology — to artificial neural networks and transformers.
+> **Goal**: Show that the network formalism we used all day is also the foundation of the most powerful AI tools applied to biological data. No optimisation theory or GPU systems — the bridge is relational structure and information flow.
 
-## From biological to artificial neurons
+## Artificial neural networks are graphs
 
-The graph abstraction does not only *describe* biological systems — it is also the computational substrate of modern AI. An artificial neural network is a directed weighted graph:
+An artificial neural network is a directed weighted graph. Nodes are neurons. Edges are weights. That is not a metaphor — it is the definition.
 
-- **Nodes** are artificial neurons (units that apply a non-linear function to their inputs).
-- **Edges** are synaptic weights (learned real numbers).
-- **Layers** impose a topological constraint: edges only go forward, from layer $l$ to layer $l+1$.
-
-The McCulloch–Pitts neuron (1943) was the first formal model. The perceptron (Rosenblatt, 1958) added learning. The backpropagation algorithm (Rumelhart et al., 1986) made deep multi-layer networks trainable. Transformers [@Vaswani2017] (2017) replaced fixed topology with *dynamic* edge weights — the attention mechanism — and became the architecture behind large language models (LLMs).
-
-The key conceptual bridge: **every technique we used today applies equally to biological and artificial networks**. The questions change; the tools do not.
-
-## Deep feedforward network topology
-
-A **multi-layer perceptron** (MLP) is a fully connected layered graph. We build one from scratch as an igraph object and ask the same structural questions we asked of the *C. elegans* connectome.
+The first difference from biological networks is topological. A **multi-layer perceptron** (MLP) enforces a strict layered structure: all edges go forward, from layer $l$ to layer $l+1$, with no shortcuts, no feedback, no hubs.
 
 ```{r}
 #| label: mlp-build
 
 layer_sizes <- c(input = 4, hidden1 = 6, hidden2 = 6, output = 2)
-
-# Node table: one row per neuron
-nodes_mlp <- imap_dfr(layer_sizes, function(n, lname) {
-  tibble(
-    layer      = lname,
-    layer_idx  = which(names(layer_sizes) == lname),
-    neuron_idx = seq_len(n),
-    name       = paste0(lname, "_", seq_len(n))
-  )
-}) |> mutate(
-  x = layer_idx,
-  y = neuron_idx - (layer_sizes[layer] + 1) / 2   # centre each layer vertically
-)
-
-# Edge table: every neuron in layer l → every neuron in layer l+1
 layer_names <- names(layer_sizes)
+
+nodes_mlp <- imap_dfr(layer_sizes, function(n, lname) {
+  tibble(layer = lname,
+         layer_idx  = which(names(layer_sizes) == lname),
+         neuron_idx = seq_len(n),
+         name       = paste0(lname, "_", seq_len(n)))
+}) |> mutate(x = layer_idx,
+             y = neuron_idx - (layer_sizes[layer] + 1) / 2)
+
 edges_mlp <- map_dfr(seq_len(length(layer_sizes) - 1), function(i) {
-  from_nodes <- nodes_mlp |> filter(layer == layer_names[i])
-  to_nodes   <- nodes_mlp |> filter(layer == layer_names[i + 1])
-  crossing(from = from_nodes$name, to = to_nodes$name)
+  crossing(from = nodes_mlp$name[nodes_mlp$layer == layer_names[i]],
+           to   = nodes_mlp$name[nodes_mlp$layer == layer_names[i + 1]])
 })
 
-g_mlp <- graph_from_data_frame(edges_mlp, vertices = select(nodes_mlp, name, everything()), directed = TRUE)
-
-tibble(
-  Property = c("Neurons (nodes)", "Weights (edges)", "Layers",
-               "Density", "Is DAG"),
-  Value    = c(vcount(g_mlp), ecount(g_mlp), length(layer_sizes),
-               round(edge_density(g_mlp), 3),
-               is_dag(g_mlp))
-) |> kable(caption = "MLP network checklist")
+g_mlp <- graph_from_data_frame(edges_mlp,
+           vertices = select(nodes_mlp, name, everything()), directed = TRUE)
 ```
 
 ```{r}
 #| label: mlp-plot
-#| fig-cap: "MLP as a directed graph — each column is a layer, each node a neuron, each edge a learnable weight"
+#| fig-cap: "MLP as a directed graph. Every neuron in one layer connects to every neuron in the next — fully connected, no hubs, no shortcuts."
 
 as_tbl_graph(g_mlp) |>
   activate(nodes) |>
   mutate(layer = factor(layer, levels = layer_names)) |>
   ggraph(layout = "manual", x = x, y = y) +
-  geom_edge_link(alpha = 0.25, edge_width = 0.4,
-                 arrow   = arrow(length = unit(2, "mm"), type = "closed"),
+  geom_edge_link(alpha = 0.2, edge_width = 0.4,
+                 arrow = arrow(length = unit(2, "mm"), type = "closed"),
                  end_cap = circle(3, "mm")) +
   geom_node_point(aes(colour = layer), size = 6) +
   geom_node_text(aes(label = neuron_idx), size = 3, colour = "white") +
   scale_colour_brewer(palette = "Set2") +
-  labs(title = "Multi-layer perceptron — fully connected", colour = "Layer") +
+  labs(title = "Multi-layer perceptron", colour = "Layer") +
   theme_void()
 ```
 
-The degree distribution of a fully connected MLP is nothing like a biological network: every neuron has *exactly* the same degree within each layer — a perfectly regular graph with no hubs.
+The degree distribution makes the structural contrast with biological networks immediate:
 
 ```{r}
-#| label: mlp-degree
-#| fig-cap: "MLP degree distribution: a spike — every node has the same degree"
+#| label: mlp-vs-celegans-degree
+#| fig-cap: "MLP degree distribution (left) vs C. elegans (right). One is a spike, the other a heavy tail. Same type of object — completely different organisation."
 
-tibble(degree = degree(g_mlp, mode = "total")) |>
-  count(degree) |>
-  ggplot(aes(x = degree, y = n)) +
-  geom_col(fill = "steelblue", width = 0.6) +
+p_mlp <- tibble(degree = degree(g_mlp, mode = "total"), network = "MLP (4-6-6-2)")
+p_cel <- tibble(degree = degree(giant, mode = "total"),  network = "C. elegans")
+
+bind_rows(p_mlp, p_cel) |>
+  ggplot(aes(x = degree)) +
+  geom_histogram(bins = 20, fill = "steelblue", colour = "white") +
+  facet_wrap(~ network, scales = "free") +
   labs(x = "Degree", y = "Count",
-       title = "MLP degree distribution — no hubs, no tail") +
+       title = "Degree distributions: artificial vs biological network") +
   theme_net()
 ```
 
-## Scale: from a toy MLP to GPT
+The MLP is **complicated** — many edges, but completely regular. The connectome is **complex** — sparse, heterogeneous, with hubs that matter.
 
-The parameter count of a real model dwarfs anything in biology. How does that translate to graph terms?
+## Message passing: how information flows through a graph
 
-```{r}
-#| label: scale-table
+The most important conceptual development linking network science to modern AI is **message passing**. The idea is simple:
 
-params <- function(layers) {
-  # weights + biases between consecutive layers
-  n <- length(layers)
-  sum(layers[-n] * layers[-1]) + sum(layers[-1])
-}
+1. Each node holds a value (a signal, a feature).
+2. At each step, every node collects the values of its neighbours and aggregates them (sum, mean, max).
+3. The node updates its own value based on what it received.
+4. Repeat for $k$ steps.
 
-scale_df <- tribble(
-  ~Model,                ~Nodes,       ~Edges_weights,   ~Note,
-  "C. elegans (frontal)", "131",        "764",            "measured connectome",
-  "E. coli PPI",          "~2 400",     "~5 200",         "BioGRID physical",
-  "MLP 4-6-6-2",          "18",         as.character(params(c(4,6,6,2))),   "this workshop",
-  "MLP 784-256-128-10",   "1 178",      as.character(params(c(784,256,128,10))), "MNIST classifier",
-  "ResNet-50",            "~25 M",      "~25 M",          "image classifier (2015)",
-  "GPT-2 small",          "~124 M",     "~124 M",         "language model (2019)",
-  "GPT-4 (estimated)",    "~1.8 T",     "~1.8 T",         "language model (2023)"
-)
+After $k$ steps, a node's value reflects information from its $k$-hop neighbourhood. This is not new to biologists — it is how signals propagate through neural circuits, how activation cascades through a signalling network, how a disturbance spreads through a food web.
 
-kable(scale_df,
-      col.names = c("Model", "Nodes / Neurons", "Edges / Parameters", "Context"),
-      caption   = "Networks at scale: biological and artificial")
-```
-
-> **Q**: The *C. elegans* connectome has ~130 neurons. GPT-2 has ~124 million parameters. What does this difference imply about the information-processing strategies of biological vs artificial systems?
-
-## Transformer attention as a dynamic network
-
-In a transformer, attention replaces the fixed topology of an MLP with a **learned, input-dependent weighted graph** over the sequence. For each input (e.g., a sentence), the model computes a weight matrix — how much each token "attends to" every other token. This is a complete directed weighted graph whose edges change with every input.
-
-Simulate one attention head over a 12-token sequence:
+We can run this directly on the *C. elegans* connectome. Start each neuron with its betweenness centrality. After one step of message passing, each neuron holds the mean betweenness of its direct neighbours.
 
 ```{r}
-#| label: attention-simulate
+#| label: message-passing
+#| fig-cap: "One step of message passing on C. elegans. Each neuron's value before and after receiving neighbour signals. High-betweenness neurons pull their neighbours' values up."
 
-set.seed(42)
-tokens    <- c("The", "cat", "sat", "on", "the", "mat", "and", "ate", "a", "rat", ".", "[EOS]")
-n_tok     <- length(tokens)
+# Initial signal: normalised betweenness
+btw <- betweenness(giant, directed = TRUE, normalized = TRUE)
 
-# Raw attention scores (dot-product of query and key vectors, simulated)
-logits    <- matrix(rnorm(n_tok^2, sd = 1.5), n_tok, n_tok)
+# Adjacency matrix (unweighted, row = sender, col = receiver)
+A   <- as_adjacency_matrix(giant, sparse = FALSE)
 
-# Causal mask: tokens cannot attend to future tokens (GPT-style)
-mask           <- matrix(0, n_tok, n_tok)
-mask[upper.tri(mask, diag = FALSE)] <- -Inf
-logits_masked  <- logits + mask
-
-# Softmax row-wise → attention weights (rows sum to 1)
-softmax_row <- function(x) { e <- exp(x - max(x[is.finite(x)])); e / sum(e) }
-attn        <- t(apply(logits_masked, 1, softmax_row))
-rownames(attn) <- colnames(attn) <- tokens
-```
-
-```{r}
-#| label: attention-heatmap
-#| fig-cap: "Attention matrix: rows are queries (what attends), columns are keys (what is attended to). Upper triangle is masked — GPT-style causal attention."
-
-as.data.frame(attn) |>
-  rownames_to_column("query") |>
-  pivot_longer(-query, names_to = "key", values_to = "weight") |>
-  mutate(
-    query = factor(query, levels = rev(tokens)),
-    key   = factor(key,   levels = tokens)
-  ) |>
-  ggplot(aes(x = key, y = query, fill = weight)) +
-  geom_tile(colour = "white", linewidth = 0.3) +
-  scale_fill_gradient(low = "grey95", high = "steelblue",
-                      na.value = "grey80", name = "Attention\nweight") +
-  labs(x = "Key (attended to)", y = "Query (attending)",
-       title = "Transformer self-attention — one head") +
-  theme_net() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-```
-
-Convert the attention matrix to a sparse graph by keeping only the top weights:
-
-```{r}
-#| label: attention-graph
-#| fig-cap: "Attention graph: directed edges connect tokens to the tokens they attend most strongly (top 20% of weights)"
-
-threshold <- quantile(attn[is.finite(attn)], 0.80)
-
-attn_adj           <- (attn >= threshold) * 1L
-attn_adj[!is.finite(attn)] <- 0L
-
-g_attn <- graph_from_adjacency_matrix(attn_adj, mode = "directed", weighted = NULL)
+# One message-passing step: each node averages its in-neighbours' signals
+deg_in <- degree(giant, mode = "in")
+deg_in[deg_in == 0] <- 1  # avoid division by zero for source nodes
+msg1   <- as.vector((t(A) %*% btw) / deg_in)
 
 tibble(
-  Property = c("Tokens (nodes)", "Attention edges", "Density",
-               "Mean in-degree", "Max in-degree token"),
-  Value    = c(vcount(g_attn), ecount(g_attn),
-               round(edge_density(g_attn), 3),
-               round(mean(degree(g_attn, mode = "in")), 2),
-               tokens[which.max(degree(g_attn, mode = "in"))])
-) |> kable(caption = "Attention graph — structural summary")
+  neuron    = names(btw),
+  before    = as.numeric(btw),
+  after_1   = msg1
+) |>
+  ggplot(aes(x = before, y = after_1)) +
+  geom_point(colour = "steelblue", alpha = 0.6) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", colour = "firebrick") +
+  labs(x = "Betweenness (original)",
+       y = "Mean neighbour betweenness (after 1 step)",
+       title = "Message passing on C. elegans — 1 hop") +
+  theme_net()
 ```
 
-```{r}
-#| label: attention-network-plot
-#| fig-cap: "Attention as a network: node size = in-degree (how often a token is attended to)"
+Neurons above the dashed line are connected to high-betweenness hubs. Neurons below are connected to peripheral nodes. **The graph structure determines what information reaches each node** — independently of any learning.
 
-as_tbl_graph(g_attn) |>
-  activate(nodes) |>
-  mutate(indegree = centrality_degree(mode = "in")) |>
-  ggraph(layout = "circle") +
-  geom_edge_arc(alpha = 0.4, edge_width = 0.5,
-                arrow   = arrow(length = unit(2, "mm"), type = "closed"),
-                end_cap = circle(4, "mm"),
-                strength = 0.2) +
-  geom_node_point(aes(size = indegree), colour = "steelblue") +
-  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
-  scale_size_continuous(range = c(2, 8)) +
-  labs(title = "Attention graph (top 20% weights)", size = "In-degree") +
-  theme_void()
-```
+This is the operation at the heart of **Graph Neural Networks** (GNNs): learn what to aggregate from neighbours, and how to update. Applied to a protein contact graph, this is how AlphaFold 2 predicts protein structure — amino acids are nodes, proximity in 3D space defines edges, message passing over this graph propagates structural context to every residue.
 
-## What makes artificial and biological networks different?
+## What network science and relational AI share
 
 ```{r}
 #| label: comparison-table
 
 tribble(
-  ~Property,           ~`C. elegans`,           ~`MLP`,                        ~`Transformer`,
-  "Topology",          "Irregular, sparse",      "Layered, fully connected",    "Dynamic — changes per input",
-  "Degree dist.",      "Heterogeneous (hubs)",   "Regular (all equal)",         "Input-dependent",
-  "Edge weights",      "Discrete (synapse count)","Continuous (learned reals)", "Continuous (attention scores)",
-  "Directionality",    "Directed",               "Directed (forward pass)",     "Directed (causal mask)",
-  "Learning",          "Synaptic plasticity",    "Gradient descent",            "Gradient descent",
-  "Scale (edges)",     "~800",                   "~100 – 100 M",               "~100 M – 1 T"
-) |> kable(caption = "Biological vs artificial networks — structural comparison")
+  ~Concept,              ~`Network science`,              ~`Graph Neural Networks`,
+  "Node",                "Neuron, protein, species",      "Amino acid, atom, gene",
+  "Edge",                "Synapse, interaction, flux",    "Contact, bond, co-expression",
+  "Centrality",          "Fixed metric (degree, betw.)",  "Learned aggregation function",
+  "Community",           "Dense subgraph partition",      "Latent cluster in embedding",
+  "Information flow",    "Shortest paths, diffusion",     "Iterated message passing",
+  "Key question",        "What is the structure?",        "What does the structure predict?"
+) |> kable(caption = "Network science and GNNs: same objects, different questions")
 ```
 
-> **Exercise 5**: The attention heatmap shows which tokens attend to which. Look at the token with the highest in-degree. Does it make linguistic sense that it would be widely attended to? Now change `set.seed(42)` to another value — does the same token remain the hub, or does the result change? What does this tell you about interpreting attention weights as meaningful connections?
+The shift is in the question, not the object. Network science asks: *what is the structure of this system?* Relational AI asks: *given this structure, what can we predict?* The graph is the same. The analytical machinery carries over directly.
+
+> **Exercise 5**: Run two steps of message passing instead of one (apply the aggregation twice). Do the values converge or diverge? What does convergence mean biologically — and why might too many steps be a problem for a real GNN on a protein graph?
+
+---
+
+# Epilogue · The Unstable Landscape of Tools {.unnumbered}
+
+In Q1 2026 — the same quarter this workshop was taught — global venture capital investment hit **$297 billion**, of which **$239 billion (81%)** flowed into AI startups. Four of the five largest private funding rounds in history closed in a single 90-day window.
+
+```{r}
+#| label: ai-funding
+#| fig-cap: "Q1 2026 venture capital: four companies absorbed more than half of all global startup investment. Source: Crunchbase, TechInsider, IndexBox (April 2026)."
+#| code-fold: true
+
+tribble(
+  ~Company,        ~Billion_USD, ~Category,
+  "OpenAI",        122,          "AI",
+  "Anthropic",      30,          "AI",
+  "xAI",            20,          "AI",
+  "Waymo",          16,          "AI",
+  "Other AI",       51,          "AI",
+  "Non-AI",         58,          "Other"
+) |>
+  mutate(Company = fct_reorder(Company, Billion_USD)) |>
+  ggplot(aes(x = Company, y = Billion_USD, fill = Category)) +
+  geom_col() +
+  geom_text(aes(label = paste0("$", Billion_USD, "B")),
+            hjust = -0.1, size = 3.5) +
+  scale_fill_manual(values = c(AI = "steelblue", Other = "grey70")) +
+  scale_y_continuous(limits = c(0, 145), labels = function(x) paste0("$", x, "B")) +
+  coord_flip() +
+  labs(x = NULL, y = "USD (billions)", fill = NULL,
+       title  = "Q1 2026 global VC funding — $297B total",
+       subtitle = "81% captured by AI; OpenAI alone raised more than all non-AI startups combined") +
+  theme_net() +
+  theme(legend.position = "bottom")
+```
+
+These numbers are not a celebration. They are a map of concentration and fragility.
+
+**Tools come and go.** The companies absorbing this capital are building platforms, APIs, and proprietary models. They will be acquired, pivoted, deprecated, or superseded — on timescales shorter than a PhD. The history of bioinformatics is a graveyard of tools that were indispensable and then vanished: Galaxy workflows that no longer run, R packages removed from CRAN, web servers that returned 404 before their papers were even cited ten times. AI tools will follow the same trajectory, only faster, because the capital pressure to replace them is now measured in hundreds of billions per quarter.
+
+**What is irreplaceable is data.** Not the model weights, not the API, not the interface — the data. BioGRID, the SNAP connectome library, UniProt, the PDB: open, documented, machine-readable, format-stable datasets that have outlasted dozens of tool generations. The PSI-MI MITAB format we read in Part 4 was defined in 2004 and still works today. The edge list format we used for *C. elegans* is a text file with two columns. It will be readable in 2050.
+
+The practical upshot for your career:
+
+| Invest in | Avoid depending on |
+|---|---|
+| Standardised, open data formats | Proprietary APIs and cloud platforms |
+| Mathematical literacy (this workshop) | Any single tool or framework |
+| Version-controlled, documented datasets | Model weights without provenance |
+| The concepts behind algorithms | The algorithms' current implementation |
+
+**AI is not a gamble for its users.** It is a gamble taken by a handful of corporations betting hundreds of billions on a single technological trajectory. The risk is theirs. The utility — or the disruption — lands on everyone else. As scientists, the most robust position is not to chase the tools but to produce the kind of data and the kind of rigorous analysis that retains value regardless of which tool reads it next.
+
+The graph formalism we used today — adjacency matrices, edge lists, centralities, communities — predates the computer. It will outlast the current AI cycle. Learn the mathematics. Curate your data. The tools will sort themselves out.
 
 ---
 
