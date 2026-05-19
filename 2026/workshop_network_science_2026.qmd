@@ -45,7 +45,19 @@ theme_net <- function() {
 
 ---
 
-# Part 0 · Data Structures and Network Types `[~30 min]`
+| Time | Part | Topic |
+|------|------|-------|
+| 0:00 – 0:20 | Part 0 | Data structures, network types, complexity theory |
+| 0:20 – 0:55 | Part 1 | Graph models (ER, BA, SW) |
+| 0:55 – 1:35 | Part 2 | *C. elegans* connectome, centralities, power-law |
+| 1:35 – 2:20 | — | **Break (45 min)** |
+| 2:20 – 2:50 | Part 3 | Community detection (Leiden), assortativity |
+| 2:50 – 3:30 | Part 4 | *E. coli* PPI, robustness, network inference |
+| 3:30 – 4:00 | Part 5 | Networks as computation, GNNs |
+
+---
+
+# Part 0 · Data Structures and Network Types `[~20 min]`
 
 > **Goal**: Build the vocabulary and the R objects we will use for the rest of the day. Every network analysis starts here.
 
@@ -137,6 +149,67 @@ bind_rows(
 
 Beyond ~3.57 the orbit never settles — deterministic chaos from a deterministic rule. **This is emergence**: qualitatively new behaviour that is not present in any single part.
 
+## Reaction-diffusion and spatial pattern formation
+
+The logistic map showed how a single interaction rule generates temporal complexity. Turing's 1952 paper *The Chemical Basis of Morphogenesis* [@Turing1952] showed the same principle operating in **space**: two interacting morphogens with different diffusion rates can spontaneously break a spatially uniform state into a periodic pattern — stripes, spots, labyrinths — from nothing but random noise.
+
+The mechanism is **short-range activation, long-range inhibition**. The activator promotes itself but also produces an inhibitor. The inhibitor diffuses faster, suppressing the activator at distance. The result is a spatial competition whose outcome depends entirely on the ratio of diffusion rates, not on any pre-existing spatial information.
+
+This is modelled by a pair of coupled PDEs. The Gray-Scott formulation [@Pearson1993] uses two chemical species $u$ (substrate, consumed) and $v$ (catalyst, self-replicating):
+
+$$\frac{\partial u}{\partial t} = D_u \nabla^2 u - uv^2 + F(1-u)$$
+
+$$\frac{\partial v}{\partial t} = D_v \nabla^2 v + uv^2 - (F+k)v$$
+
+```{r}
+#| label: turing-sim
+#| fig-cap: "Gray-Scott reaction-diffusion on a 80×80 grid after 5000 steps. Spots emerge from a uniform initial state perturbed only by noise — spatial complexity from two interaction rules."
+#| cache: true
+
+set.seed(42)
+n  <- 80
+Du <- 0.16; Dv <- 0.08; F_rate <- 0.035; k <- 0.060
+
+u <- matrix(1, n, n)
+v <- matrix(0, n, n)
+
+# Seed a central patch with inhibitor + noise
+r <- 8L
+cx <- (n %/% 2 - r):(n %/% 2 + r)
+u[cx, cx] <- 0.50 + matrix(runif((2*r+1)^2, -0.05, 0.05), 2*r+1)
+v[cx, cx] <- 0.25 + matrix(runif((2*r+1)^2, -0.05, 0.05), 2*r+1)
+
+# Discrete Laplacian with periodic boundary conditions
+lap <- function(m) {
+  rbind(m[-1L, ], m[1L, ]) +   # up
+  rbind(m[n,   ], m[-n,  ]) +   # down
+  cbind(m[, -1L], m[, 1L]) +   # left
+  cbind(m[,  n ], m[, -n ]) -   # right
+  4 * m
+}
+
+dt <- 1.0
+for (i in seq_len(5000L)) {
+  uvv <- u * v * v
+  u   <- u + dt * (Du * lap(u) - uvv + F_rate * (1 - u))
+  v   <- v + dt * (Dv * lap(v) + uvv - (F_rate + k) * v)
+}
+
+expand.grid(x = seq_len(n), y = seq_len(n)) |>
+  mutate(u = as.vector(u)) |>
+  ggplot(aes(x = x, y = y, fill = u)) +
+  geom_tile() +
+  scale_fill_distiller(palette = "RdYlBu", name = "u") +
+  coord_fixed() +
+  labs(title  = "Turing pattern — Gray-Scott reaction-diffusion",
+       subtitle = paste0("Du=", Du, "  Dv=", Dv,
+                         "  F=", F_rate, "  k=", k)) +
+  theme_void() +
+  theme(legend.position = "right")
+```
+
+The pattern is not encoded anywhere in the initial conditions or the parameters individually. It is an **emergent property of the interaction structure** — the coupling between the two equations. Change the ratio $D_v/D_u$ and the pattern shifts from spots to stripes to labyrinths. Change it enough and the pattern disappears entirely. This is the same logic as the logistic map, now distributed across space.
+
 A **cell** is both complicated *and* complex. Billions of molecular machines, each with specific evolved structure (complicated) interacting through feedback loops and signalling cascades that produce homeostasis, differentiation, and cell fate decisions (complex). This is why whole-cell modelling is hard in a way that aircraft engineering and magnetism are not: we cannot get away with just the blueprint, and we cannot get away with just the coarse-grained dynamics.
 
 | System | Complicated | Complex | Implication |
@@ -212,7 +285,7 @@ In 1972, Philip W. Anderson published a one-page paper in *Science* with the tit
 
 The argument is simple. The reductionist programme — understand the parts, and you understand the whole — works within a level of organisation. Particle physics is not wrong about quarks. Chemistry is not wrong about molecules. But knowing the laws of quarks does not give you the laws of chemistry. Knowing the laws of chemistry does not give you the laws of cell biology. At each level, **new properties appear that are not present at the level below and cannot be derived from it by straightforward extrapolation**.
 
-Anderson called this *broken symmetry*: macroscopic systems do not share the symmetries of their microscopic constituents. A crystal has a preferred orientation; the underlying quantum mechanics does not. A flock has a collective direction; individual birds do not. A gene regulatory network has bistability; individual protein interactions do not.
+Anderson called this *broken symmetry*: macroscopic systems do not share the symmetries of their microscopic constituents. A crystal has a preferred orientation; the underlying quantum mechanics does not. A flock has a collective direction; individual birds do not. A gene regulatory network has bistability; individual protein interactions do not. Prigogine extended this idea into thermodynamics: far-from-equilibrium systems spontaneously break time symmetry, generating irreversible order — dissipative structures — from fluctuations [@Prigogine1984; @Antoniou1997].
 
 The practical consequence: you cannot compress a complex system by reducing it. The emergent properties are not encoded in the parts — they are encoded in the **relational structure** between parts. This is what networks represent.
 
@@ -397,7 +470,7 @@ g_tbl
 
 ---
 
-# Part 1 · Graph Models `[~55 min]`
+# Part 1 · Graph Models `[~35 min]`
 
 > **Goal**: Understand the three canonical random graph models as null hypotheses for real biological networks.
 
@@ -489,7 +562,7 @@ sw_stats |>
 
 ---
 
-# Part 2 · C. elegans Connectome `[~65 min]`
+# Part 2 · C. elegans Connectome `[~40 min]`
 
 The frontal neuronal network of *C. elegans*: 302 neurons (nodes), chemical synapses and gap junctions (directed edges). Fully mapped from electron microscopy — one of the few complete connectomes in biology [@Kaiser2006; @Varshney2011].
 
@@ -639,7 +712,11 @@ The power-law fit should be interpreted with caution. @Stumpf2012 and @Broido201
 
 ---
 
-# Part 3 · Community Structure `[~55 min]`
+::: {.callout-note}
+## ☕ Break — 45 minutes
+:::
+
+# Part 3 · Community Structure `[~30 min]`
 
 Neurons do not operate in isolation — they form functional modules [@Hartwell1999a; @Koch2012]. Community detection asks: which sets of neurons are more densely interconnected with each other than with the rest? For a review of algorithms and quality metrics see @Newman2006, @Newman2015, and @Emmons2016. Detected communities should not be over-interpreted: @Ingram2006a showed that network structure alone does not determine function.
 
@@ -736,7 +813,7 @@ tibble(name = names(knn_vals), knn = knn_vals) |>
 
 ---
 
-# Part 4 · E. coli PPI and Network Robustness `[~50 min]`
+# Part 4 · E. coli PPI and Network Robustness `[~40 min]`
 
 ## Protein–protein interaction network
 
@@ -884,7 +961,7 @@ thr_stats |>
 
 ---
 
-# Part 5 · Networks as Computation `[~40 min]`
+# Part 5 · Networks as Computation `[~30 min]`
 
 > **Goal**: Show that the network formalism we used all day is also the foundation of the most powerful AI tools applied to biological data. No optimisation theory or GPU systems — the bridge is relational structure and information flow.
 
@@ -1061,6 +1138,10 @@ These numbers are not a celebration. They are a map of concentration and fragili
 **Tools come and go.** The companies absorbing this capital are building platforms, APIs, and proprietary models. They will be acquired, pivoted, deprecated, or superseded — on timescales shorter than a PhD. The history of bioinformatics is a graveyard of tools that were indispensable and then vanished: Galaxy workflows that no longer run, R packages removed from CRAN, web servers that returned 404 before their papers were even cited ten times. AI tools will follow the same trajectory, only faster, because the capital pressure to replace them is now measured in hundreds of billions per quarter.
 
 **What is irreplaceable is data.** Not the model weights, not the API, not the interface — the data. BioGRID, the SNAP connectome library, UniProt, the PDB: open, documented, machine-readable, format-stable datasets that have outlasted dozens of tool generations. The PSI-MI MITAB format we read in Part 4 was defined in 2004 and still works today. The edge list format we used for *C. elegans* is a text file with two columns. It will be readable in 2050.
+
+The key word is *standardised*. A dataset with no metadata is not data — it is noise. The [Genomic Standards Consortium](https://www.gensc.org) (GSC) formalised this insight into the **MIxS** framework: *Minimum Information about any (x) Sequence* [@Yilmaz2011]. Whether the sequence is an amplicon, a metagenome, or a single genome, MIxS defines the minimum metadata fields — sample origin, environment, collection date, sequencing method — that make a record reusable by anyone, with any tool, ten years later. This is technology-agnostic design: the standard does not care whether the sequences were produced on a 454, an Illumina, or a platform that does not exist yet. The metadata schema outlives every instrument generation.
+
+**Reproducibility and open practice** are the institutional expression of the same principle. The [Turing Way](https://the-turing-way.netlify.app) is a community-maintained handbook covering reproducible workflows, open data, version control, and FAIR principles [@TheTuringWay2022]. It is itself an example of what it advocates: free, open-source, collaboratively written, and designed to remain useful regardless of which software stack its readers use.
 
 The practical upshot for your career:
 
