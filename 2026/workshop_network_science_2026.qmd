@@ -1,0 +1,701 @@
+---
+title: "Network Science: From Theory to Biological Applications"
+subtitle: "BC204 Hands-on Workshop · Spring 2026"
+author: "Savvas Paragkamian"
+date: today
+format:
+  html:
+    toc: true
+    toc-float: true
+    toc-depth: 3
+    code-fold: show
+    code-tools: true
+    theme: flatly
+    number-sections: true
+    fig-width: 8
+    fig-height: 5
+  pdf:
+    toc: true
+    number-sections: true
+execute:
+  warning: false
+  message: false
+bibliography: ../Bibliography/Network Science Workshop 2018.bib
+---
+
+```{r}
+#| label: setup
+#| code-fold: true
+
+required <- c("igraph", "ggraph", "tidygraph", "poweRlaw", "tidyverse", "knitr")
+missing  <- required[!required %in% installed.packages()[, "Package"]]
+if (length(missing)) install.packages(missing, repos = "https://cloud.r-project.org")
+
+library(igraph)
+library(ggraph)
+library(tidygraph)
+library(poweRlaw)
+library(tidyverse)
+library(knitr)
+
+theme_net <- function() {
+  theme_bw() +
+    theme(panel.grid.minor = element_blank(),
+          strip.background = element_blank())
+}
+```
+
+---
+
+# Part 0 · Data Structures and Network Types `[~30 min]`
+
+> **Goal**: Build the vocabulary and the R objects we will use for the rest of the day. Every network analysis starts here.
+
+## What is a graph?
+
+A network is modelled mathematically as a **graph** $G(V, E)$: a set of $N$ nodes $V$ and a set of edges $E \subseteq V \times V$.
+
+Four assumptions underpin this abstraction:
+
+1. All nodes belong to the same variable type (e.g., all proteins, or all neurons).
+2. All edges belong to the same variable type (e.g., all physical interactions).
+3. Each edge connects exactly two nodes — a **binary relation**.
+4. Both nodes and edges are time-independent (a static snapshot).
+
+These assumptions are often violated in real biology. Knowing *when* they break tells you when to upgrade to a richer model (temporal, multilayer, hypergraph).
+
+## Data structures for networks
+
+A network can be stored in three equivalent ways:
+
+| Structure | Best for |
+|---|---|
+| **Adjacency matrix** | Dense networks, linear algebra, visualisation as a heatmap |
+| **Edge list** | Sparse networks, tidy data pipelines |
+| Incidence matrix | Bipartite networks (two node types) |
+
+### Adjacency matrix
+
+Rows and columns are nodes; a cell is 1 if an edge exists (0 otherwise). For a **directed** graph the matrix is asymmetric — entry $(i, j) = 1$ means an edge *from* $i$ *to* $j$. For an **undirected** graph it is symmetric.
+
+```{r}
+#| label: adjacency-matrix
+
+set.seed(7)
+n_nodes <- 5
+node_names <- LETTERS[1:n_nodes]
+
+adj <- matrix(
+  sample(c(0L, 1L), n_nodes^2, replace = TRUE, prob = c(0.5, 0.5)),
+  nrow = n_nodes, ncol = n_nodes,
+  dimnames = list(node_names, node_names)
+)
+diag(adj) <- 0L  # no self-loops
+
+kable(adj, caption = "Adjacency matrix — rows are sources, columns are targets")
+```
+
+Convert to an igraph object and plot:
+
+```{r}
+#| label: adj-to-graph
+#| fig-cap: "Graph built from the adjacency matrix"
+
+g_adj <- graph_from_adjacency_matrix(adj, mode = "directed")
+plot(g_adj, vertex.color = "steelblue", vertex.label.color = "white",
+     edge.arrow.size = 0.6, main = "From adjacency matrix")
+```
+
+Visualise the same matrix as a heatmap — useful for spotting asymmetry (directed) or symmetry (undirected):
+
+```{r}
+#| label: adj-heatmap
+#| fig-cap: "Adjacency matrix as a heatmap — asymmetry signals a directed network"
+
+as.data.frame(adj) |>
+  rownames_to_column("from") |>
+  pivot_longer(-from, names_to = "to", values_to = "edge") |>
+  ggplot(aes(x = to, y = fct_rev(from), fill = factor(edge))) +
+  geom_tile(colour = "white") +
+  scale_fill_manual(values = c("0" = "grey92", "1" = "steelblue"),
+                    labels = c("absent", "present")) +
+  scale_x_discrete(position = "top") +
+  coord_fixed() +
+  labs(x = "To", y = "From", fill = "Edge", title = "Adjacency matrix heatmap") +
+  theme_net()
+```
+
+### Edge list
+
+An edge list stores only the existing edges — one row per edge. It is more memory-efficient than a matrix for sparse networks (most real biological networks have density < 1 %).
+
+```{r}
+#| label: edge-list
+
+el <- as.data.frame(which(adj == 1, arr.ind = TRUE)) |>
+  transmute(from = node_names[row], to = node_names[col])
+
+kable(el, caption = "Edge list derived from the same network")
+```
+
+Build a graph directly from the edge list:
+
+```{r}
+#| label: el-to-graph
+#| fig-cap: "The same graph built from the edge list — identical result"
+
+g_el <- graph_from_edgelist(as.matrix(el), directed = TRUE)
+plot(g_el, vertex.color = "coral2", vertex.label.color = "white",
+     edge.arrow.size = 0.6, main = "From edge list")
+```
+
+### Weighted edges
+
+Edges can carry a numeric **weight** (interaction strength, distance, correlation). Weights extend binary graphs to continuous ones.
+
+```{r}
+#| label: weighted-edgelist
+
+el_w <- el |> mutate(weight = round(runif(n(), 0.1, 1.0), 2))
+
+kable(el_w, caption = "Weighted edge list")
+```
+
+## Network types
+
+Real networks differ in four properties you must check before any analysis:
+
+| Property | Values | Example |
+|---|---|---|
+| **Direction** | directed / undirected | synapses (directed); co-expression (undirected) |
+| **Weight** | weighted / binary | interaction strength; presence/absence |
+| **Sign** | signed / unsigned | activation (+) / inhibition (−) in gene regulation |
+| **Simplicity** | simple / multigraph | single edge per pair; multiple experimental evidence |
+
+```{r}
+#| label: network-type-checklist
+
+g_w <- graph_from_data_frame(el_w, directed = TRUE)
+E(g_w)$weight <- el_w$weight
+
+tibble(
+  Property  = c("Directed", "Weighted", "Simple", "Has loops"),
+  Value     = c(is_directed(g_w), is_weighted(g_w),
+                is_simple(g_w),   any(which_loop(g_w)))
+) |> kable(caption = "Network type checklist for our toy graph")
+```
+
+## R objects for network data
+
+Three representations are used across this workshop:
+
+| Object | Package | When to use |
+|---|---|---|
+| `igraph` | igraph | Most analyses — fast C backend |
+| `tbl_graph` | tidygraph | When you need `dplyr`/`ggraph` pipelines |
+| `matrix` / `tibble` | base / tidyverse | Raw import and pre-processing |
+
+```{r}
+#| label: r-objects
+
+# igraph object
+g_ig <- graph_from_data_frame(el_w, directed = TRUE)
+
+# tbl_graph — wraps igraph, activates nodes or edges as a tibble
+g_tbl <- as_tbl_graph(g_ig)
+
+# inspect
+g_tbl
+```
+
+> **Exercise 0**: Make the toy graph undirected (`as.undirected(g_ig)`). Check again: is the adjacency matrix now symmetric? Does the edge count change, and why?
+
+---
+
+# Part 1 · Graph Models `[~55 min]`
+
+> **Goal**: Understand the three canonical random graph models as null hypotheses for real biological networks.
+
+## Erdős–Rényi: the null model
+
+The ER model places edges between *N* nodes with probability *p*, independently. It predicts a Poisson degree distribution — no hubs. Real biological networks almost never look like this, which is exactly why it is useful as a null.
+
+```{r}
+#| label: er-phase-transition
+#| fig-cap: "Phase transition in ER networks: a giant component suddenly appears at ⟨k⟩ = 1"
+
+set.seed(42)
+n       <- 500
+probs   <- seq(0, 0.012, length.out = 80)
+
+er_stats <- map_dfr(probs, function(p) {
+  g     <- sample_gnp(n, p, directed = FALSE)
+  comps <- components(g)
+  tibble(mean_k     = mean(degree(g)),
+         giant_frac = max(comps$csize) / n)
+})
+
+ggplot(er_stats, aes(x = mean_k, y = giant_frac)) +
+  geom_point(colour = "steelblue", size = 1.5) +
+  geom_vline(xintercept = 1, linetype = "dashed", colour = "firebrick") +
+  labs(x = "Mean degree ⟨k⟩", y = "Giant component / N",
+       title = "ER percolation threshold",
+       caption = "Dashed line: ⟨k⟩ = 1 — the point where a giant component emerges") +
+  theme_net()
+```
+
+> **Q**: A pathogen progressively disables random host proteins. Which side of this threshold matters for the host? For the pathogen's spread through a PPI network?
+
+## Barabási–Albert: preferential attachment
+
+Each new node attaches with probability proportional to existing degree — "rich get richer". This produces a power-law degree distribution and explains why hubs appear in PPIs, metabolic networks, and co-authorship graphs [@Barabasi1999a].
+
+```{r}
+#| label: ba-degree
+#| fig-cap: "BA model: straight line on log-log axes is the signature of a power law"
+
+set.seed(42)
+ba <- sample_pa(2000, power = 1, directed = FALSE)
+
+tibble(degree = degree(ba)) |>
+  count(degree) |>
+  ggplot(aes(x = degree, y = n)) +
+  geom_point(colour = "coral2") +
+  scale_x_log10() + scale_y_log10() +
+  labs(x = "Degree (log)", y = "Count (log)",
+       title = "BA model degree distribution") +
+  theme_net()
+```
+
+## Watts–Strogatz: small-world networks
+
+A regular lattice rewired with probability β. At intermediate β: short average path lengths (like a random graph) AND high clustering (like a lattice) — simultaneously. This is the *small-world* regime [@Watts1998].
+
+```{r}
+#| label: sw-regime
+#| fig-cap: "Small-world window: C stays high while L drops, between β ≈ 0.01 and β ≈ 0.1"
+
+set.seed(42)
+betas   <- 10^seq(-3, 0, length.out = 40)
+lattice <- make_lattice(length = 200, dim = 1, nei = 4, circular = TRUE)
+C0      <- transitivity(lattice, type = "average")
+L0      <- mean_distance(lattice, directed = FALSE)
+
+sw_stats <- map_dfr(betas, function(b) {
+  g <- sample_smallworld(1, 200, 4, b)
+  tibble(beta   = b,
+         C_norm = transitivity(g, type = "average") / C0,
+         L_norm = mean_distance(g, directed = FALSE)  / L0)
+})
+
+sw_stats |>
+  pivot_longer(c(C_norm, L_norm), names_to = "metric", values_to = "value") |>
+  ggplot(aes(x = beta, y = value, colour = metric)) +
+  geom_line(linewidth = 1) +
+  scale_x_log10() +
+  scale_colour_manual(values   = c(C_norm = "steelblue", L_norm = "coral2"),
+                      labels   = c("C / C₀  (clustering)", "L / L₀  (path length)")) +
+  labs(x = "Rewiring probability β (log)", y = "Normalised value",
+       colour = NULL, title = "Watts–Strogatz small-world regime") +
+  theme_net()
+```
+
+> **Exercise 1**: Generate ER and BA networks each with N = 300 and approximately the same number of edges as a Watts–Strogatz graph with N = 300, K = 4, β = 0.05. Compare clustering coefficient and mean path length across the three. Which model is "most small-world"?
+
+---
+
+# Part 2 · C. elegans Connectome `[~65 min]`
+
+The frontal neuronal network of *C. elegans*: 302 neurons (nodes), chemical synapses and gap junctions (directed edges). Fully mapped from electron microscopy — one of the few complete connectomes in biology [@Kaiser2006].
+
+## Import and network checklist
+
+Every network analysis should start with this checklist before computing anything.
+
+```{r}
+#| label: celegans-import
+
+edges <- read_delim("../Data/C-elegans-frontal.txt", delim = " ",
+                    col_types = "cci",
+                    show_col_types = FALSE) |>
+  mutate(across(c(FromNodeId, ToNodeId), as.character))
+
+meta  <- read_csv("../Data/C-elegans-frontal-meta.csv",
+                  col_types = cols(), show_col_types = FALSE) |>
+  rename(x = posx, y = posy) |>
+  mutate(node_id = as.character(node_id))
+
+net <- graph_from_data_frame(edges, directed = TRUE, vertices = meta)
+
+tibble(
+  property = c("Nodes", "Edges", "Directed", "Simple",
+               "Weighted", "Connected", "Components"),
+  value    = c(vcount(net), ecount(net), is_directed(net),
+               is_simple(net), is_weighted(net), is_connected(net),
+               components(net)$no)
+) |> kable(caption = "C. elegans connectome — network checklist")
+```
+
+```{r}
+#| label: giant-component
+
+# Work with the largest weakly connected component
+giant <- decompose(net, min.vertices = 10)[[1]]
+cat("Giant component:", vcount(giant), "nodes |", ecount(giant), "edges\n")
+```
+
+## Spatial visualisation
+
+Neuron positions are anatomical (inferred from EM data), so this layout is biologically meaningful — not a force-directed aesthetic choice.
+
+```{r}
+#| label: spatial-plot
+#| fig-cap: "C. elegans frontal connectome in anatomical space"
+
+tidy_net <- as_tbl_graph(giant) |>
+  left_join(meta, by = c("name" = "node_id"))
+
+ggraph(tidy_net, x = x, y = y) +
+  geom_edge_link(alpha = 0.2, edge_width = 0.3,
+                 arrow     = arrow(length = unit(2, "mm"), type = "closed"),
+                 end_cap   = circle(2, "mm")) +
+  geom_node_point(size = 2, colour = "steelblue") +
+  labs(title = "C. elegans frontal connectome — anatomical layout") +
+  theme_void()
+```
+
+## Degree distribution and power-law test
+
+```{r}
+#| label: degree-powerlaw
+#| fig-cap: "Degree distribution: empirical (blue) vs power-law fit (red line from xmin)"
+
+deg_all <- degree(giant, mode = "total")
+deg_pos <- deg_all[deg_all > 0]
+
+# Maximum-likelihood fit following Clauset, Shalizi & Newman (2009)
+pl      <- displ$new(deg_pos)
+pl$setXmin(estimate_xmin(pl))
+pl$setPars(estimate_pars(pl))
+
+cat(sprintf("Power-law: α = %.3f  |  xmin = %d  |  tail n = %d\n",
+            pl$pars, pl$xmin, sum(deg_pos >= pl$xmin)))
+
+# Empirical complementary CDF
+ccdf_df <- tibble(k = sort(unique(deg_pos))) |>
+  mutate(p = map_dbl(k, \(x) mean(deg_pos >= x)))
+
+# Theoretical power-law CCDF
+k_range     <- seq(pl$xmin, max(deg_pos))
+tail_frac   <- mean(deg_pos >= pl$xmin)
+pl_ccdf_df  <- tibble(
+  k = k_range,
+  p = tail_frac * (k_range / pl$xmin) ^ (-(pl$pars - 1))
+)
+
+ggplot(ccdf_df, aes(x = k, y = p)) +
+  geom_point(colour = "steelblue", size = 1.5) +
+  geom_line(data = pl_ccdf_df, aes(x = k, y = p),
+            colour = "firebrick", linewidth = 1) +
+  scale_x_log10() + scale_y_log10() +
+  labs(x = "Degree k (log)", y = "P(K ≥ k)  [log]",
+       title = "C. elegans degree distribution",
+       subtitle = sprintf("Power-law fit: α = %.2f, xmin = %d", pl$pars, pl$xmin)) +
+  theme_net()
+```
+
+## Centralities
+
+```{r}
+#| label: centralities
+
+tidy_net <- tidy_net |>
+  activate(nodes) |>
+  mutate(
+    degree      = centrality_degree(mode = "total"),
+    degree_in   = centrality_degree(mode = "in"),
+    degree_out  = centrality_degree(mode = "out"),
+    betweenness = centrality_betweenness(directed = TRUE),
+    closeness   = centrality_closeness(mode = "all"),
+    pagerank    = centrality_pagerank()
+  )
+
+node_tbl <- tidy_net |> activate(nodes) |> as_tibble()
+```
+
+Degree measures local connectivity. Betweenness measures how often a neuron lies on the shortest path between other pairs — a bottleneck. PageRank propagates influence through the directed structure.
+
+```{r}
+#| label: centrality-scatter
+#| fig-cap: "Nodes above the trend are bottlenecks: high betweenness despite moderate degree"
+
+ggplot(node_tbl, aes(x = degree, y = betweenness)) +
+  geom_point(colour = "steelblue", alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, colour = "firebrick", linewidth = 0.8) +
+  labs(x = "Degree", y = "Betweenness centrality",
+       title = "Hubs vs bottlenecks in C. elegans") +
+  theme_net()
+```
+
+```{r}
+#| label: top-neurons
+
+node_tbl |>
+  arrange(desc(betweenness)) |>
+  select(name, degree, betweenness, closeness, pagerank) |>
+  head(10) |>
+  kable(digits = 3,
+        caption = "Top-10 neurons by betweenness centrality",
+        col.names = c("Neuron", "Degree", "Betweenness", "Closeness", "PageRank"))
+```
+
+> **Exercise 2**: Identify neurons in the top-10 by betweenness that are *not* in the top-10 by degree. These are the biological bottlenecks. Look up one of them — what is its known function in *C. elegans* neurobiology?
+
+---
+
+# Part 3 · Community Structure `[~55 min]`
+
+Neurons do not operate in isolation — they form functional modules. Community detection asks: which sets of neurons are more densely interconnected with each other than with the rest?
+
+## Leiden algorithm
+
+Leiden [@Traag2019] solves a resolution-limit problem in Louvain: it guarantees that all communities are internally well-connected and produces more stable partitions. It is the current standard for biological network analysis.
+
+```{r}
+#| label: leiden-communities
+
+# Leiden requires an undirected simple graph
+tidy_ud <- tidy_net |>
+  convert(to_undirected) |>
+  convert(to_simple) |>
+  mutate(community = as.factor(group_leiden(resolution = 0.5)))
+
+n_comm <- tidy_ud |> activate(nodes) |> pull(community) |> n_distinct()
+cat("Communities detected (resolution = 0.5):", n_comm, "\n")
+```
+
+```{r}
+#| label: spatial-communities
+#| fig-cap: "Community membership mapped onto anatomical positions — do communities cluster spatially?"
+
+ggraph(tidy_ud, x = x, y = y) +
+  geom_edge_link(alpha = 0.12, edge_width = 0.3) +
+  geom_node_point(aes(colour = community), size = 3) +
+  labs(title  = "C. elegans communities (Leiden, resolution = 0.5)",
+       colour = "Community") +
+  theme_void() +
+  theme(legend.position = "bottom")
+```
+
+```{r}
+#| label: kk-communities
+#| fig-cap: "Force-directed layout reveals intra-community density regardless of anatomy"
+
+ggraph(tidy_ud, layout = "kk") +
+  geom_edge_link(alpha = 0.12, edge_width = 0.3) +
+  geom_node_point(aes(colour = community), size = 3) +
+  labs(title = "C. elegans communities (force-directed layout)") +
+  theme_void() +
+  theme(legend.position = "bottom")
+```
+
+## Resolution sensitivity
+
+The `resolution` parameter controls granularity: higher values split communities further. There is no universally correct value — choose based on the biological question.
+
+```{r}
+#| label: resolution-sweep
+#| fig-cap: "Number of detected communities increases with resolution parameter"
+
+resolutions <- seq(0.1, 2.5, by = 0.1)
+
+res_df <- map_dfr(resolutions, function(r) {
+  n <- tidy_ud |>
+    mutate(community = group_leiden(resolution = r)) |>
+    activate(nodes) |>
+    pull(community) |>
+    n_distinct()
+  tibble(resolution = r, n_communities = n)
+})
+
+ggplot(res_df, aes(x = resolution, y = n_communities)) +
+  geom_line(colour = "steelblue") +
+  geom_point(colour = "steelblue") +
+  labs(x = "Resolution parameter", y = "Number of communities",
+       title = "Leiden resolution sensitivity") +
+  theme_net()
+```
+
+## Degree assortativity
+
+Do highly connected neurons preferentially synapse onto other highly connected neurons?
+
+```{r}
+#| label: assortativity
+
+cat("Degree assortativity:", round(assortativity_degree(giant, directed = TRUE), 3), "\n")
+
+knn_vals <- knn(giant)$knn
+tibble(name = names(knn_vals), knn = knn_vals) |>
+  left_join(node_tbl, by = "name") |>
+  ggplot(aes(x = degree, y = knn)) +
+  geom_point(colour = "steelblue", alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, colour = "firebrick") +
+  labs(x = "Degree", y = "Mean neighbour degree",
+       title = "Degree assortativity in C. elegans") +
+  theme_net()
+```
+
+> **Exercise 3**: Change the Leiden `resolution` to 1.5. Do the communities still align with anatomical positions, or do they fragment? What does a negative assortativity value mean biologically in a neural circuit?
+
+---
+
+# Part 4 · E. coli PPI and Network Robustness `[~50 min]`
+
+## Protein–protein interaction network
+
+BioGRID curates experimentally validated PPIs from the literature [@Stark2006]. We keep only *physical* interactions (direct binding or stable complex), not *genetic* interactions (functional relationships without physical contact).
+
+```{r}
+#| label: ecoli-import
+
+biogrid_raw <- read.delim(
+  "../Data/BIOGRID-ORGANISM-Escherichia_coli_K12_W3110-3.5.165.mitab.txt",
+  sep = "\t", header = TRUE
+)
+
+physical_types <- c(
+  "psi-mi:MI:0407(direct interaction)",
+  "psi-mi:MI:0915(physical association)"
+)
+
+ppi_edges <- biogrid_raw |>
+  filter(Interaction.Types %in% physical_types) |>
+  select(from = Alt.IDs.Interactor.A, to = Alt.IDs.Interactor.B)
+
+ppi_net <- graph_from_data_frame(ppi_edges, directed = FALSE) |>
+  simplify()
+
+cat("E. coli PPI — nodes:", vcount(ppi_net),
+    "| edges:", ecount(ppi_net),
+    "| density:", round(edge_density(ppi_net), 5), "\n")
+```
+
+```{r}
+#| label: ecoli-degree
+#| fig-cap: "E. coli PPI degree distribution — linear on log-log, consistent with a power law"
+
+deg_ppi <- degree(ppi_net)
+
+tibble(degree = deg_ppi) |>
+  count(degree) |>
+  ggplot(aes(x = degree, y = n)) +
+  geom_point(colour = "coral2") +
+  scale_x_log10() + scale_y_log10() +
+  labs(x = "Degree (log)", y = "Count (log)",
+       title = "E. coli PPI degree distribution") +
+  theme_net()
+```
+
+## Robustness: random failures vs targeted attacks
+
+Scale-free networks tolerate random node removal (rare hubs are unlikely to be hit) but collapse quickly under targeted hub removal. This asymmetry has direct implications for antibiotic target selection and network-based drug design.
+
+```{r}
+#| label: robustness
+#| cache: true
+#| fig-cap: "Percolation: the PPI network is robust to random failures but fragile under hub removal"
+
+percolate <- function(g, strategy = c("random", "targeted"), n_steps = 80) {
+  strategy <- match.arg(strategy)
+  N        <- vcount(g)
+  V(g)$id  <- seq_len(N)
+
+  step_at <- round(seq(1, N - 1, length.out = n_steps))
+
+  results <- vector("list", n_steps)
+  for (i in seq_along(step_at)) {
+    comps <- components(g)
+    results[[i]] <- tibble(
+      removed_frac = (N - vcount(g)) / N,
+      giant_frac   = max(comps$csize)  / N
+    )
+    del <- if (strategy == "random") {
+      sample(V(g)$id, 1)
+    } else {
+      which.max(degree(g))
+    }
+    g <- delete_vertices(g, del)
+    V(g)$id <- seq_len(vcount(g))
+  }
+  bind_rows(results) |> mutate(strategy = strategy)
+}
+
+set.seed(42)
+ppi_giant  <- decompose(ppi_net)[[1]]
+robust_df  <- bind_rows(
+  percolate(ppi_giant, "random"),
+  percolate(ppi_giant, "targeted")
+)
+
+ggplot(robust_df, aes(x = removed_frac, y = giant_frac, colour = strategy)) +
+  geom_line(linewidth = 1) +
+  scale_colour_manual(values = c(random = "steelblue", targeted = "firebrick"),
+                      labels = c("Random failure", "Targeted hub removal")) +
+  labs(x = "Fraction of proteins removed",
+       y = "Giant component fraction",
+       colour = NULL,
+       title  = "E. coli PPI robustness") +
+  theme_net()
+```
+
+## Network inference: from correlation to edges
+
+Most biological networks are not directly observed — they are *inferred* from expression data. The simplest approach: correlate gene expression profiles across conditions and apply a threshold. The threshold choice is a biological decision, not a statistical one.
+
+```{r}
+#| label: inference-threshold
+#| fig-cap: "Network structure is highly sensitive to the correlation threshold — there is no free lunch"
+
+set.seed(42)
+n_genes   <- 60
+n_samples <- 25
+expr      <- matrix(rnorm(n_genes * n_samples), nrow = n_genes,
+                    dimnames = list(paste0("g", seq_len(n_genes)), NULL))
+
+# Plant a co-expression module in genes 1–15
+expr[1:15, ] <- expr[1:15, ] + rnorm(n_samples, mean = 2.5, sd = 0.5)
+
+cor_mat    <- cor(t(expr))
+thresholds <- seq(0.3, 0.9, by = 0.05)
+
+thr_stats <- map_dfr(thresholds, function(thr) {
+  adj       <- (abs(cor_mat) > thr) * 1L
+  diag(adj) <- 0L
+  g         <- graph_from_adjacency_matrix(adj, mode = "undirected")
+  tibble(threshold    = thr,
+         density      = edge_density(g),
+         n_components = components(g)$no,
+         mean_degree  = mean(degree(g)))
+})
+
+thr_stats |>
+  pivot_longer(-threshold, names_to = "metric", values_to = "value") |>
+  ggplot(aes(x = threshold, y = value)) +
+  geom_line(colour = "steelblue") + geom_point(colour = "steelblue") +
+  facet_wrap(~ metric, scales = "free_y",
+             labeller = as_labeller(c(
+               density      = "Edge density",
+               n_components = "Connected components",
+               mean_degree  = "Mean degree"
+             ))) +
+  labs(x = "Correlation threshold", y = NULL,
+       title = "Effect of threshold on inferred network structure") +
+  theme_net()
+```
+
+> **Exercise 4**: At what threshold does the inferred network fragment into more than 10 components? Is a denser or sparser network more biologically credible for a 25-sample experiment? What additional information (besides the threshold) would you need to validate this network?
+
+---
+
+# References {.unnumbered}
