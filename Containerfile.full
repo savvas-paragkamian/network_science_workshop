@@ -1,7 +1,7 @@
 # Extended image for the 2018 Gene Ontology section (workshop_2.Rmd).
 # Adds Bioconductor annotation packages on top of the lean image.
 # Build the lean image first: make build
-FROM network-science-workshop:2026
+FROM localhost/network-science-workshop:2026
 
 # graphviz headers are required by Rgraphviz at install time
 RUN apt-get update && apt-get install -y --no-install-recommends \

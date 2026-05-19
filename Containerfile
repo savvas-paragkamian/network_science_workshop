@@ -1,20 +1,21 @@
 # Lean image for the 2026 course (and 2025).
 # Base: rocker/tidyverse ships R, RStudio Server, tidyverse, devtools, rmarkdown, knitr.
 # It stops before tinytex (LaTeX) — we render to HTML only, no PDF engine needed.
-FROM rocker/tidyverse:4.4.2
+FROM docker.io/rocker/tidyverse:4.4.2
 
-# Quarto is in rocker/verse but not tidyverse; install the CLI directly
-RUN curl -fsSL https://quarto.org/download/latest/quarto-linux-amd64.deb -o /tmp/quarto.deb \
-    && dpkg -i /tmp/quarto.deb \
-    && rm /tmp/quarto.deb
-
-# igraph needs libglpk at link time; nvim+tmux+git for terminal-first students
+# System packages — all in one layer to keep image lean
 RUN apt-get update && apt-get install -y --no-install-recommends \
+        curl \
         libglpk-dev \
         neovim \
         tmux \
         git \
     && rm -rf /var/lib/apt/lists/*
+
+# Quarto is in rocker/verse but not tidyverse; install the CLI directly
+RUN curl -fsSL https://quarto.org/download/latest/quarto-linux-amd64.deb -o /tmp/quarto.deb \
+    && dpkg -i /tmp/quarto.deb \
+    && rm /tmp/quarto.deb
 
 # CRAN packages not in rocker/tidyverse
 RUN Rscript -e "install.packages( \
