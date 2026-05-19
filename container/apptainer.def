@@ -1,0 +1,33 @@
+Bootstrap: localimage
+From: ../network-science-workshop_2026.tar.gz
+
+# Build from the local archive produced by 'make save' — no registry, no internet.
+#
+# Usage on HPC / server (Apptainer or Singularity):
+#
+#   1. Instructor builds and saves the image on a machine with internet:
+#        make build
+#        make save                         # → network-science-workshop_2026.tar.gz
+#
+#   2. Transfer the .tar.gz to the HPC (USB, scp, rsync — your choice).
+#
+#   3. On HPC, build the SIF from the local archive:
+#        apptainer build workshop_2026.sif container/apptainer.def
+#
+#   4. Run RStudio Server (bind a writable directory for student outputs):
+#        apptainer exec \
+#            --bind $PWD/outputs:/home/rstudio/outputs \
+#            workshop_2026.sif /init
+#        # → open http://localhost:8787  (user: rstudio  password: network2026)
+#
+#   No internet required at any step after the initial 'make build'.
+
+%labels
+    org.opencontainers.image.description Network Science Workshop, Bioinformatics MSc, University of Crete
+    Version 2026
+
+%environment
+    export PASSWORD=network2026
+
+%runscript
+    exec /init "$@"

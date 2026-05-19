@@ -1,0 +1,18 @@
+name: network-science-workshop
+
+# Instructor workflow — mounts the repo so edits are reflected immediately.
+# Students do not use this file; they use: make run
+services:
+  rstudio:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: network-science-workshop:2026
+    ports:
+      - "8787:8787"
+    volumes:
+      - .:/home/rstudio/workshop:z   # :z for SELinux (Fedora/RHEL); remove on macOS/Windows
+    environment:
+      PASSWORD: network2026
+      ROOT: "true"
+    restart: unless-stopped

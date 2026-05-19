@@ -1,0 +1,7 @@
+.git
+.Rproj.user
+**/*.html
+**/*.pdf
+**/*.log
+**/*.sif
+**/*.tar
