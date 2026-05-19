@@ -48,7 +48,13 @@ sudo pacman -S git podman podman-compose
 
 ### macOS
 
-Install [Homebrew](https://brew.sh) if you don't have it, then:
+> **Apple Silicon (M1/M2/M3):** The workshop image is built for `linux/amd64` because the base image (`rocker/tidyverse`) does not publish an `arm64` variant. **Docker Desktop** is the recommended choice on Apple Silicon — it uses Rosetta 2 to run `amd64` images natively and transparently, with no extra configuration. Podman works too but requires QEMU emulation (slower).
+
+**Docker Desktop (recommended on Apple Silicon):**
+
+Install [Docker Desktop for Mac](https://www.docker.com/products/docker-desktop/). It includes `docker compose` and handles `amd64` emulation via Rosetta 2 automatically.
+
+**Podman (Intel Mac or if you prefer Podman):**
 
 ```bash
 brew install git podman podman-compose
@@ -62,7 +68,7 @@ podman machine start         # start the VM (run this after every reboot)
 podman machine stop          # stop when not in use
 ```
 
-Alternatively, install [Docker Desktop for Mac](https://www.docker.com/products/docker-desktop/) — it includes `docker compose` and needs no manual VM management.
+On Apple Silicon with Podman, QEMU must be available in the VM for `linux/amd64` emulation. If the build fails with an architecture error, switch to Docker Desktop.
 
 ### Windows
 

@@ -1,17 +1,23 @@
-IMAGE   := network-science-workshop
-VERSION := 2026
-ARCHIVE := $(IMAGE)_$(VERSION).tar.gz
-PORT    := 8787
+IMAGE    := network-science-workshop
+VERSION  := 2026
+ARCHIVE  := $(IMAGE)_$(VERSION).tar.gz
+PORT     := 8787
+# rocker/tidyverse only publishes linux/amd64 for this tag.
+# Pinning the platform here ensures the build works from any host architecture
+# (Apple Silicon M1/M2, x86_64, etc.) and produces an image that runs natively
+# on x86_64 lab machines.  On Apple Silicon, Docker Desktop uses Rosetta 2
+# automatically; Podman uses QEMU — both are transparent to the user.
+PLATFORM := linux/amd64
 
 .PHONY: build build-full run start stop save load clean
 
 ## Build the lean image for the 2026 course (requires internet — run once)
 build:
-	podman build -t $(IMAGE):$(VERSION) -f Containerfile .
+	podman build --platform $(PLATFORM) -t $(IMAGE):$(VERSION) -f Containerfile .
 
 ## Build the full image including Bioconductor for the 2018 GO section
 build-full: build
-	podman build -t $(IMAGE):$(VERSION)-full -f Containerfile.full .
+	podman build --platform $(PLATFORM) -t $(IMAGE):$(VERSION)-full -f Containerfile.full .
 
 ## Run RStudio Server in the foreground (Ctrl-C to stop)
 run:
