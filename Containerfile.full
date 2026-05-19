@@ -1,0 +1,24 @@
+# Extended image for the 2018 Gene Ontology section (workshop_2.Rmd).
+# Adds Bioconductor annotation packages on top of the lean image.
+# Build the lean image first: make build
+FROM network-science-workshop:2026
+
+# graphviz headers are required by Rgraphviz at install time
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        graphviz \
+        libgraphviz-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN Rscript -e "BiocManager::install( \
+    c('AnnotationDbi', 'GO.db', 'topGO', 'Rgraphviz', \
+      'GSEABase', 'org.EcK12.eg.db'), \
+    ask = FALSE, update = FALSE)"
+
+# Add the remaining data files used only in 2018/workshop_2.Rmd
+COPY --chown=rstudio:rstudio Data/BIOGRID-ORGANISM-Escherichia_coli_K12_MG1655-3.5.166.mitab.txt \
+                              /home/rstudio/workshop/Data/
+COPY --chown=rstudio:rstudio Data/NeuronConnect.xls \
+                              Data/NeuronType.xls \
+                              /home/rstudio/workshop/Data/
+COPY --chown=rstudio:rstudio 2018/ /home/rstudio/workshop/2018/
+COPY --chown=rstudio:rstudio 2025/ /home/rstudio/workshop/2025/
