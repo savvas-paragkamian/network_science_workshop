@@ -1,35 +1,37 @@
-# OCI-compliant image — works with: podman build, docker build, apptainer build
-# rocker/verse ships: R 4.4.2, RStudio Server, tidyverse, rmarkdown, knitr, BiocManager, Quarto
-FROM rocker/verse:4.4.2
+# Lean image for the 2026 course (and 2025).
+# Base: rocker/tidyverse ships R, RStudio Server, tidyverse, devtools, rmarkdown, knitr.
+# It stops before tinytex (LaTeX) — we render to HTML only, no PDF engine needed.
+FROM rocker/tidyverse:4.4.2
 
-# igraph links against libglpk; Rgraphviz needs the graphviz headers at build time
+# Quarto is in rocker/verse but not tidyverse; install the CLI directly
+RUN curl -fsSL https://quarto.org/download/latest/quarto-linux-amd64.deb -o /tmp/quarto.deb \
+    && dpkg -i /tmp/quarto.deb \
+    && rm /tmp/quarto.deb
+
+# igraph needs libglpk at link time; nvim+tmux+git for terminal-first students
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libglpk-dev \
-        graphviz \
-        libgraphviz-dev \
+        neovim \
+        tmux \
+        git \
     && rm -rf /var/lib/apt/lists/*
 
-# CRAN — only packages not already in rocker/verse
+# CRAN packages not in rocker/tidyverse
 RUN Rscript -e "install.packages( \
     c('igraph', 'ggraph', 'tidygraph', 'poweRlaw'), \
     repos = 'https://cloud.r-project.org', \
     Ncpus = parallel::detectCores())"
 
-# Bioconductor — used in the GO enrichment section of workshop_2 (2018)
-RUN Rscript -e "BiocManager::install( \
-    c('AnnotationDbi', 'GO.db', 'topGO', 'Rgraphviz', \
-      'GSEABase', 'org.EcK12.eg.db'), \
-    ask = FALSE, update = FALSE)"
-
-# Bundle course materials so the image is self-contained.
-# Students need only the image file — no git clone, no internet at runtime.
-COPY --chown=rstudio:rstudio Data/         /home/rstudio/workshop/Data/
+# Only the data files the 2026 workshop actually reads
+COPY --chown=rstudio:rstudio Data/BIOGRID-ORGANISM-Escherichia_coli_K12_W3110-3.5.165.mitab.txt \
+                              /home/rstudio/workshop/Data/
+COPY --chown=rstudio:rstudio Data/C-elegans-frontal.txt \
+                              Data/C-elegans-frontal-meta.csv \
+                              /home/rstudio/workshop/Data/
 COPY --chown=rstudio:rstudio Bibliography/ /home/rstudio/workshop/Bibliography/
 COPY --chown=rstudio:rstudio Images/       /home/rstudio/workshop/Images/
 COPY --chown=rstudio:rstudio 2026/         /home/rstudio/workshop/2026/
 
-# Password baked in — acceptable for an offline teaching image.
-# Override at runtime: podman run -e PASSWORD=other ...
 ENV PASSWORD=network2026 \
     ROOT=false
 

@@ -3,17 +3,21 @@ VERSION := 2026
 ARCHIVE := $(IMAGE)_$(VERSION).tar.gz
 PORT    := 8787
 
-.PHONY: build run save load clean
+.PHONY: build build-full run save load clean
 
-## Build the image from the Containerfile (requires internet — run once)
+## Build the lean image for the 2026 course (requires internet — run once)
 build:
-	podman build -t $(IMAGE):$(VERSION) .
+	podman build -t $(IMAGE):$(VERSION) -f Containerfile .
+
+## Build the full image including Bioconductor for the 2018 GO section
+build-full: build
+	podman build -t $(IMAGE):$(VERSION)-full -f Containerfile.full .
 
 ## Run RStudio Server at http://localhost:8787  (user: rstudio  password: network2026)
 run:
 	podman run --rm -p $(PORT):8787 $(IMAGE):$(VERSION)
 
-## Save image to a distributable file (USB stick, local server, etc.)
+## Save lean image to a distributable file (USB stick, local server, etc.)
 save: $(ARCHIVE)
 
 $(ARCHIVE):
@@ -28,11 +32,10 @@ $(ARCHIVE):
 load:
 	podman load < $(ARCHIVE)
 
-## Remove the saved archive
 clean:
 	rm -f $(ARCHIVE)
 
-# Windows (Docker Desktop / WSL2) — same commands, same Makefile.
+# Windows (Docker Desktop / WSL2): same commands work.
 # Native CMD fallback:
 #   docker load < $(ARCHIVE)
 #   docker run --rm -p 8787:8787 $(IMAGE):$(VERSION)
