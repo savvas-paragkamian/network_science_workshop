@@ -1,5 +1,5 @@
 ---
-title: "Network Science Lab 1: Basic concepts and workflow of network analysis"
+title: "Network Science Workshop 1: Basic concepts and workflow of network analysis"
 date: '`r Sys.Date()`'
 output: 
   html_document:
@@ -9,7 +9,7 @@ output:
     fig_caption: true
     toc_depth: 3
 link-citations: yes
-bibliography: Bibliography/Network Science Workshop 2018.bib
+bibliography: ../Bibliography/Network Science Workshop 2018.bib
 ---
 
 # Welcome
@@ -43,12 +43,9 @@ There are many packages for network analysis that have overlapping functionality
 
 ```{r}
 # Packages
-packages_workspace <- c("rmarkdown","knitr", "citr")
+packages_workspace <- c("rmarkdown","knitr")
 packages_data <- c("tidyverse")
-packages_networks <- c("igraph", "ggraph","tidygraph", "bipartite")
-packages_gene_ontology_bioconductor <- c("AnnotationDbi","RBGL","GO.db","topGO","Rgraphviz","GSEABase")
-packages_KEGG_reactome <- c("KEGGgraph","KEGG.db","KEGGREST","reactome.db")
-packages_gene_annotation_bioconductor <- c("org.Dm.eg.db","org.Mm.eg.db","org.Sc.sgd.db") #http://genomicsclass.github.io/book/pages/annoCheat.html
+packages_networks <- c("igraph", "ggraph","tidygraph")
 
 packages_Lab_1 <- c(packages_workspace,packages_data,packages_networks)
 ```
@@ -63,26 +60,20 @@ check.packages_cran <- function(pkg){
         install.packages(new.pkg, dependencies = TRUE)
     sapply(pkg, library, character.only = TRUE)
 }
-
-
-
-check.packages_bioconductor <- function(pkg){
-    
-    if (!requireNamespace("BiocManager"))
-    install.packages("BiocManager")
-    new.pkg <- pkg[!(pkg %in%library()[]$result[,1])]
-    if (length(new.pkg)) 
-        BiocManager::install(new.pkg,version = "3.8")
-    sapply(pkg, library, character.only = TRUE)
-}
-
-
-# Check installation
-
 check_installation_lab_1 <- check.packages_cran(packages_Lab_1)
 
-#check_installation_bio <- check.packages_bioconductor(packages_gene_ontology_bioconductor)
+#check.packages_bioconductor <- function(pkg){
+#    
+#    if (!requireNamespace("BiocManager"))
+#    install.packages("BiocManager")
+#    new.pkg <- pkg[!(pkg %in%library()[]$result[,1])]
+#    if (length(new.pkg)) 
+#        BiocManager::install(new.pkg,version = "3.8")
+#    sapply(pkg, library, character.only = TRUE)
+#}
 
+# Check installation
+#check_installation_bio <- check.packages_bioconductor(packages_gene_ontology_bioconductor)
 
 ```
 
@@ -93,7 +84,7 @@ load_packages_Lab_1 <- lapply(packages_Lab_1,library,character.only=TRUE)
 ```
 
 
-![Basic workflow of network analysis](Images/network_workflow.png)
+![Basic workflow of network analysis](../Images/network_workflow.png)
 
 The network data analysis workflow is the same as the workflow in data science. What differentiates network science is the tools, data structures and most importantly some novel conceptual frameworks of system analysis.
 
@@ -103,7 +94,7 @@ The network data analysis workflow is the same as the workflow in data science. 
 ## Graphs
 
 In page 5 of [@Crane2018]:
-> Networks are not graphs. A graph is a mathematical object consisting of a set of vertices V and a set of edges E ⊆ V×V . This mathematical concept can be extended in several ways to allow for multiple edges, hyperedges, and multiple layers, but all of these objects, i.e., graphs, multigraphs, hypergraphs, multilayer graphs, etc., are mathematical entities. They are also distilled entities, in that they can be discussed independently of any presumed statistical or scientific context. From this point of view, graphs can be regarded as a ‘syntax’ for communicating about network data. But this graph-theoretic syntax is just one language with which to communicate about networks. 
+> Networks are not graphs. A graph is a mathematical object consisting of a set of vertices V and a set of edges E cat("$\\subseteq$") V×V . This mathematical concept can be extended in several ways to allow for multiple edges, hyperedges, and multiple layers, but all of these objects, i.e., graphs, multigraphs, hypergraphs, multilayer graphs, etc., are mathematical entities. They are also distilled entities, in that they can be discussed independently of any presumed statistical or scientific context. From this point of view, graphs can be regarded as a ‘syntax’ for communicating about network data. But this graph-theoretic syntax is just one language with which to communicate about networks. 
 
 Definition: one mode networks as graphs
 
@@ -201,8 +192,8 @@ There are many databases with real biological networks.
 ## Protein - Protein interactions
 
 ```{r}
-
-Escherichia_coli_biogrid <- read.delim(file = "Data/BIOGRID-ORGANISM-Escherichia_coli_K12_W3110-3.5.165.mitab.txt",sep = "\t",header = T)
+### for windows users please modify the path accordingly
+Escherichia_coli_biogrid <- read.delim(file = "../Data/BIOGRID-ORGANISM-Escherichia_coli_K12_W3110-3.5.165.mitab.txt",sep = "\t",header = T)
 
 colnames(Escherichia_coli_biogrid)
 
@@ -251,9 +242,9 @@ Here we will import the *C. elegans* frontal neuronal network from the [SNAP Lib
 
 ```{r, message=FALSE, warning=FALSE}
 # import files
-c_elegans_edgelist <- read.delim(file = "Data/C-elegans-frontal.txt",sep = " ",header = T) %>% mutate( FromNodeId=as.character(FromNodeId),ToNodeId=as.character(ToNodeId))
+c_elegans_edgelist <- read.delim(file = "../Data/C-elegans-frontal.txt",sep = " ",header = T) %>% mutate( FromNodeId=as.character(FromNodeId),ToNodeId=as.character(ToNodeId))
 
-c_elegans_metadata <- read_csv(file = "Data/C-elegans-frontal-meta.csv",col_names = T) %>% dplyr::rename(x=posx ,y=posy)
+c_elegans_metadata <- read_csv(file = "../Data/C-elegans-frontal-meta.csv",col_names = T) %>% dplyr::rename(x=posx ,y=posy)
 
 c_elegans_metadata$node_id <- as.character(c_elegans_metadata$node_id)
 
@@ -267,7 +258,7 @@ summary(c_elegans_net)
 This network is also a spatial planar network because it contains the two-dimensional position of each neuron. These co-ordinations were algorithmically inferred [@Kaiser2006]. 
 
 ```{r, message=FALSE, warning=FALSE}
-ggraph(graph = c_elegans_net,layout = "manual", circular = FALSE, node.positions = c_elegans_metadata)+
+ggraph(graph = c_elegans_net,x = x, y = y)+
   geom_edge_link(edge_width=0.3,colour="gray50",arrow = arrow(length = unit(4, 'mm')), end_cap = circle(3, 'mm')) + 
   geom_node_point(size=1)+
   geom_point(data = c_elegans_metadata,aes(x=x,y=y),color="red")+
@@ -289,17 +280,17 @@ ecount(c_elegans_net)
 ```
 3. Are the links directed?
 ```{r}
-igraph::is.directed(c_elegans_net)
+igraph::is_directed(c_elegans_net)
 ```
 4. Are there any loops and/or multiple links? If yes why? What they mean? Are they biologically relevant?
 ```{r}
-is.simple(c_elegans_net)
-has.multiple(c_elegans_net)
+is_simple(c_elegans_net)
+any_multiple(c_elegans_net)
 ```
 5. Are the links weighted?
 
 ```{r}
-igraph::is.weighted(c_elegans_net)
+igraph::is_weighted(c_elegans_net)
 
 ```
 
@@ -308,9 +299,9 @@ Then we can study the whole network.
 6. Is the network connected? If not what is the size of each component?
 ```{r}
 is_connected(c_elegans_net)
-clusters(c_elegans_net) # if there are multiple network components sometimes is useful to use onle the giant component. To extract the giant component you can use the decompose.graph function.
+igraph::components(c_elegans_net) # if there are multiple network components sometimes is useful to use onle the giant component. To extract the giant component you can use the decompose.graph function.
 
-decg<-decompose.graph(c_elegans_net, min.vertices = 10)
+decg<-decompose(c_elegans_net, min.vertices = 10)
 
 c_elegans_net_deg <- decg[[1]]
 ```
@@ -410,7 +401,7 @@ diameter(c_elegans_net)
 The average path length is the mean geodesic.
 
 ```{r}
-average.path.length(c_elegans_net)
+mean_distance(c_elegans_net)
 ```
 
 
@@ -450,7 +441,7 @@ Find the statistically significant motifs.
 
 Structural balance analysis of signed graphs. 
 
-![Bi-fan signed motifs](Images/bi-fan motifs.png)
+![Bi-fan signed motifs](../Images/bi-fan motifs.png)
 from [@Ingram2006a]. 
 
 Because of the observation that both engineered as well as natural networks share the same network motif there have been studies more general designing principles. 
@@ -468,7 +459,7 @@ Structure does not determine function [@Ingram2006a]
 
 Analysis of the intermediate level of networks, grouping of nodes, is still a challenging topic. Nodes (e.g proteins, neurons, transcription factors) rarely function on their own, they form clusters that have specific functions [@Newman2006; @Newman2010d]. Additionally because real complex networks are very big sometime is useful to decompose them to smaller parts for analysis. There are 3 types of methods in deciphering these clusters from links:
 
-![Communities in networks](Images/network_communities.png)
+![Communities in networks](../Images/network_communities.png)
 
 1. Non-overlapping
 2. Overlapping
@@ -493,36 +484,53 @@ Infomap algorithm
 
 ```{r}
 c_elegans_tidy_graph %>% mutate(community_infomap = as.factor(group_infomap())) %>%
-    ggraph(layout = "manual", circular = FALSE, node.positions = c_elegans_metadata) + 
+    ggraph(x=x, y=y) + 
     geom_edge_link(edge_width=0.3,colour="gray50",arrow = arrow(length = unit(4, 'mm')), end_cap = circle(3, 'mm')) +   geom_node_point(aes(colour = community_infomap), size = 3) +
-    ggtitle("C. elegans network infomap clusters")+
+    ggtitle("C elegans network infomap clusters")+
     theme_bw()+
     theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank())
 
-c_elegans_tidy_graph %>% mutate(community_infomap = as.factor(group_infomap())) %>% 
-    ggraph(layout = "kk") + 
-    geom_edge_link(edge_width=0.3,colour="gray50",arrow = arrow(length = unit(4, 'mm')), end_cap = circle(3, 'mm')) +     geom_node_point(aes(colour = community_infomap), size = 3) +
-    ggtitle("C. elegans network infomap clusters and kk layout")+
-    theme_graph()
 ```
+
+```{r}
+#c_elegans_tidy_graph %>%
+#    mutate(community_infomap = as.factor(group_infomap())) %>%
+#    ggraph(layout = "kk") +
+#    geom_edge_link(edge_width=0.3,
+#                   colour="gray50",
+#                   arrow = arrow(length = unit(4, 'mm')),
+#                   end_cap = circle(3, 'mm')) +
+#    geom_node_point(aes(colour = community_infomap), size = 3) +
+#    ggtitle("C. elegans network infomap clusters and kk layout")+
+#    theme_bw()+
+#    theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank())
+
+```
+
 
 Louvain algorithm
 
 > This function implements the multi-level modularity optimization algorithm for finding community structure, see VD Blondel, J-L Guillaume, R Lambiotte and E Lefebvre: Fast unfolding of community hierarchies in large networks, http://arxiv.org/abs/arXiv:0803.0476 for the details.
 
 ```{r}
-c_elegans_tidy_graph %>% as.undirected %>% simplify() %>% as_tbl_graph() %>% mutate(group_louvain = as.factor(group_louvain())) %>% 
-    ggraph(layout = "manual", circular = FALSE, node.positions = c_elegans_metadata) + 
+c_elegans_tidy_graph %>%
+    as_undirected %>%
+    simplify() %>%
+    as_tbl_graph() %>% mutate(group_louvain = as.factor(group_louvain())) %>% 
+    ggraph(x=x,y=y) + 
     geom_edge_link(edge_width=0.3,colour="gray50",arrow = arrow(length = unit(4, 'mm')), end_cap = circle(3, 'mm')) +     geom_node_point(aes(colour = group_louvain), size = 3) +
-    ggtitle("C. elegans network group_louvain clusters")+
+    ggtitle("C elegans network group louvain clusters")+
     theme_bw()+
     theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank())
 
-c_elegans_tidy_graph %>% as.undirected %>% simplify() %>% as_tbl_graph() %>% mutate(group_louvain = as.factor(group_louvain())) %>% 
+c_elegans_tidy_graph %>%
+    as_undirected %>%
+    simplify() %>% as_tbl_graph() %>% mutate(group_louvain = as.factor(group_louvain())) %>% 
     ggraph(layout = "kk") + 
     geom_edge_link(edge_width=0.3,colour="gray50",arrow = arrow(length = unit(4, 'mm')), end_cap = circle(3, 'mm')) +     geom_node_point(aes(colour = group_louvain), size = 3) +
-    ggtitle("C. elegans network group_louvain clusters and kk layout")+
-    theme_graph()
+    ggtitle("C elegans network group louvain clusters and kk layout")+
+    theme_bw()+
+    theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank())
 ```
 
 Most algorithms cluster nodes into communities but with package `linkcomm` [@Kalinka2011] one can cluster links thereby allowing overlapping and nested communities.
@@ -561,7 +569,13 @@ where deg(v) is the number of neighbors of node v. The nodes with the highest de
 ```{r, message=FALSE, warning=FALSE}
 # run the degree
 
-c_elegans_tidy_graph <- c_elegans_tidy_graph %>% activate(nodes) %>% mutate(degree=centrality_degree(mode = "total"), degree_in=centrality_degree(mode = "in"),degree_out=centrality_degree(mode = "out"))
+c_elegans_tidy_graph <- c_elegans_tidy_graph %>%
+    activate(nodes) %>%
+    mutate(degree=centrality_degree(mode = "total"),
+           degree_in=centrality_degree(mode = "in"),
+           degree_out=centrality_degree(mode = "out"),
+           betweenness=centrality_betweenness(directed = TRUE)
+    )
 
 ```
 
@@ -573,7 +587,7 @@ Bottlenecks are the nodes that are located between highly connected clusters and
 
 $$BC(v)=\sum_{s\neq t \neq v \in V}^{} \frac{g_{st}(v)}{g_{st}}$$
 
-where $$$g_{st}$$ is the number of all geodesic directed paths between all pairs of nodes, except pairs with v, and $$g_{st}(v)$$ is the number of geodesics that pass through node v.
+where $$g_{st}$$ is the number of all geodesic directed paths between all pairs of nodes, except pairs with v, and $$g_{st}(v)$$ is the number of geodesics that pass through node v.
 
 ```{r, message=FALSE, warning=FALSE}
 # run betweenness
@@ -595,7 +609,7 @@ c_elegans_tidy_graph <- c_elegans_tidy_graph %>% activate(nodes) %>% mutate(clos
 
 ```
 
-![Different characteristics defined by centralities](Images/bottleneck and hub.png)
+![Different characteristics defined by centralities](../Images/bottleneck and hub.png)
 
 #### Local Transitivity - Clustering coefficient
 
@@ -642,7 +656,7 @@ c_elegans_tidy_graph <- c_elegans_tidy_graph %>% activate(nodes) %>% mutate(page
 
 Identification of important nodes has been studied extensive in many diverse biological networks. This has led to the creation of many novel centralities specific to each type of networks.
 
-![Centralities [periodic table](http://www.schochastics.net/sna/periodic.html)](Images/periodic_table_centralities.png)
+![Centralities [periodic table](http://www.schochastics.net/sna/periodic.html)](../Images/periodic_table_centralities.png)
 
 ## From local to global
 
@@ -650,7 +664,7 @@ Identification of important nodes has been studied extensive in many diverse bio
 ```{r}
 
 c_elegans_tidy_graph_edges <- c_elegans_tidy_graph %>% activate(edges) %>% mutate(from=as.character(from),to=as.character(to))
-c_elegans_tidy_graph_nodes <- c_elegans_tidy_graph %>% activate(nodes) %>% as.tibble() %>% rownames_to_column()
+c_elegans_tidy_graph_nodes <- c_elegans_tidy_graph %>% activate(nodes) %>% as_tibble() %>% rownames_to_column()
 
 ```
 
@@ -716,9 +730,17 @@ From [Assortativity in wiki](https://en.wikipedia.org/wiki/Assortativity)
 
 $$r = \frac{\sum_{jk}{jk (e_{jk} - q_j q_k)}}{\sigma_{q}^{2}}$$
 
-The term $$q_{{k}}$$ is the distribution of the remaining degree. This captures the number of edges leaving the node, other than the one that connects the pair. The distribution of this term is derived from the degree distribution $$p_{{k}}$$ as $$q_{k}={\frac {(k+1)p_{k+1}}{\sum _{j\geq 1}jp_{j}}}$$. Finally,
-$$e_{{jk}}$$ refers to the joint probability distribution of the remaining degrees of the two vertices. This quantity is symmetric on an undirected graph, and follows the sum rules 
-$$\sum_{jk}{e_{jk}} = 1\,$$ and $$\sum_{j}{e_{jk}} = q_{k}\$$.
+The term $$q_{{k}}$$ is the distribution of the remaining degree.
+This captures the number of edges leaving the node, other than the one that
+connects the pair. The distribution of this term is derived from the degree distribution
+$$p_{{k}}$$ as
+$$q_{k}={\frac {(k+1)p_{k+1}}{\sum _{j\geq 1}jp_{j}}}$$.
+Finally,
+$$e_{{jk}}$$ refers to the joint probability distribution of the
+remaining degrees of the two vertices. This quantity is symmetric on an undirected graph, and follows the sum rules 
+
+$$\sum_{jk}{e_{jk}} = 1\,$$ and
+$$\sum_{j}{e_{jk}} = q_{k}$$.
 
 ```{r, message=FALSE, warning=FALSE}
 
@@ -734,12 +756,12 @@ ggplot()+
 ```
 
 ```{r,fig.cap ="Each point is a link"}
-ggplot()+
-  geom_point(data = c_elegans_tidy_graph_edges,aes(x=degree.y,y=degree.x), color="gray27",show.legend = F)+
-  labs(x="Degree", y= "Degree")+
-  theme_bw()+
-  coord_equal()+
-  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank())
+#ggplot()+
+#  geom_point(data = c_elegans_tidy_graph_edges,aes(x=degree.y,y=degree.x), color="gray27",show.legend = F)+
+#  labs(x="Degree", y= "Degree")+
+#  theme_bw()+
+#  coord_equal()+
+#  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank())
 
 ```
 
@@ -838,6 +860,476 @@ From the very important paper of Stumpf and Porter [@Stumpf2012]. Stumpf often c
 It is important to note that in practice, many surveyed networks to date have been subnets of much larger networks (only 20% of real PPIs are known). Also it has been shown that random subnets sampled from scale-free networks are not themselves scale-free [@Stumpf2005a].
 
 `poweRlaw` package provides the statistical methods to test whether a distribution follows a power law [@Gillespie2014].
+
+# Random graphs
+
+From [Wikipedia](https://en.wikipedia.org/wiki/Random_graph) 
+
+> In mathematics, random graph is the general term to refer to probability distributions over graphs. Random graphs may be described simply by a probability distribution, or by a random process which generates them. The theory of random graphs lies at the intersection between graph theory and probability theory. From a mathematical perspective, random graphs are used to answer questions about the properties of typical graphs. Its practical applications are found in all areas in which complex networks need to be modeled – a large number of random graph models are thus known, mirroring the diverse types of complex networks encountered in different areas. In a mathematical context, random graph refers almost exclusively to the Erdős–Rényi random graph model. In other contexts, any graph model may be referred to as a random graph.
+
+
+From [@Barabasi2015]:
+
+To construct an undirected random network (Erdos-Renyi and Gilbert models) we follow these steps:
+
+1. Start with N isolated nodes.
+2. Select a node pair and generate a random number between 0 and 1. If the number exceeds p, connect the selected node pair with a link, otherwise leave them disconnected.
+3. Repeat step (2) for each of the $N(N-1)/2$ node pairs.
+
+```{r}
+
+# An over-simplified version for the creation of the random graph.
+
+n=10
+p=0.2
+
+custom_random_net <- function(n,p) {
+  
+  nodes=rep(1:n)
+  possible_edges <- as.data.frame(t(combn(x = nodes,m = 2)))
+  
+  possible_edges$selected <- NA
+  
+  for(i in 1:nrow(possible_edges)) {
+    
+    random <- runif(n = 1,min = 0,max = 1)
+    
+    if (p > random){
+      
+      possible_edges[i,3] <- TRUE
+      
+    } else {
+        
+      possible_edges[i,3] <- FALSE
+        
+    }
+    
+  }
+
+  possible_edges %>% filter(selected==TRUE) %>% dplyr::select(V1,V2) %>% graph_from_data_frame(directed = F)
+  
+}
+
+my_random_net <- custom_random_net(n,p)
+
+```
+
+
+As the probability increases so does the size of the giant component.
+
+```{r}
+
+plots <- 10
+nodes <- 100
+max_prob <- 0.01
+directed <- FALSE
+loops <- FALSE
+
+probability <- seq(from=0,to=max_prob, by=max_prob/plots)
+
+
+for (j in 1:plots) {
+  
+  g <- sample_gnp(n = nodes, p = probability[j],directed = directed,loops = loops)
+  g$layout <- layout_in_circle
+  g$prob <- probability
+  
+  plot(g,layout=layout_in_circle,vertex.size=4,vertex.label=NA, vertex.color="coral2",vertex.frame.color="coral2",main = paste0("Erdos - Renyi network with ", probability[j]," probability"))
+  
+}
+
+
+```
+
+
+```{r}
+## Function to create multiple random networks with different probabilities
+
+erdos_renyi_parameters <- function(nodes,iterations,directed,loops,max_prob) {
+  
+  erdos_renyi_df <- data.frame(matrix(ncol = 10,nrow = iterations))
+  colnames(erdos_renyi_df) <- c("nodes","giant_compontent_size","nclusters","probability","directed","loops","n_edges","mean_degree","average_clustering","average_path")
+  
+  probability <- seq(from=0,to=max_prob, by=max_prob/iterations)
+  
+  for(i in 1:iterations) {
+  
+    erdos_renyi <- sample_gnp(n = nodes, p = probability[i],directed = directed,loops = loops)
+    
+    clusters_network <- clusters(erdos_renyi)
+  
+    erdos_renyi_df[i,1] <- nodes
+    erdos_renyi_df[i,2] <- max(clusters_network$csize)
+    erdos_renyi_df[i,3] <- clusters_network$no
+    erdos_renyi_df[i,4] <- probability[i]
+    erdos_renyi_df[i,5] <- directed
+    erdos_renyi_df[i,6] <- loops
+    erdos_renyi_df[i,7] <- ecount(erdos_renyi)
+    erdos_renyi_df[i,8] <- mean(igraph::degree(erdos_renyi))
+    erdos_renyi_df[i,9] <- igraph::transitivity(erdos_renyi,type = "average")
+    erdos_renyi_df[i,10] <- average.path.length(erdos_renyi)
+    rm(clusters_network,erdos_renyi)
+  
+  }
+  
+  erdos_renyi_df
+  
+}
+
+```
+
+
+Run the function to see the differences that arise with the change of probability. 
+
+```{r}
+nodes <- 100
+iterations <-1000
+max_prob <- 0.06
+directed <- FALSE
+loops <- FALSE
+
+erdos_renyi_df <- erdos_renyi_parameters(nodes,iterations,directed,loops,max_prob)
+
+```
+
+
+Random networks expected value is determined by N and p. If we increase p a random network becomes denser: The average number of links increase linearly from ‹L› = 0 to Lmax and the average degree of a node increases from ‹k› = 0 to ‹k› = N-1 [@Barabasi2015].
+
+$$<L>=p\frac{N(N-1)}{2}$$
+
+$$<k>=p(N-1)$$
+
+
+```{r}
+ggplot()+
+  geom_point(data = erdos_renyi_df,aes(x=probability,y=n_edges), color="dodgerblue1",show.legend = F)+
+  ggtitle("Erdos - Renyi networks")+
+  labs(x="Probability", y= "Number of edges")+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank())
+
+```
+
+```{r}
+ggplot()+
+  geom_point(data = erdos_renyi_df,aes(x=probability,y=mean_degree, color="Mean degree"),show.legend = F)+
+  scale_colour_manual(values = c("Mean degree"="darkorchid2"))+
+  ggtitle("Erdos - Renyi networks")+
+  labs(x="probability", y= "Mean degree")+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(),legend.title = element_blank())
+
+```
+
+What is a phase transition? What it means in the following plot?
+
+```{r}
+ggplot()+
+  geom_point(data = erdos_renyi_df,aes(x=probability,y=giant_compontent_size, color="Giant component"),show.legend = T)+
+  geom_point(data = erdos_renyi_df,aes(x=probability,y=nclusters, color="Clusters"),show.legend = T)+
+  scale_colour_manual(values = c("Giant component"="palegreen2","Clusters"="darkorange2"))+
+  ggtitle("Erdos - Renyi networks")+
+  labs(x="Probability", y= "Number")+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(),legend.title = element_blank())
+
+```
+
+
+```{r}
+
+erdos_renyi_df %>% mutate(giant_comp_percent=giant_compontent_size/nodes) %>%
+ggplot()+
+  geom_point(aes(x=probability,y=giant_comp_percent, color="Giant component"),show.legend = F)+
+  scale_colour_manual(values = c("Giant component"="palegreen2"))+
+  ggtitle("Erdos - Renyi networks")+
+  labs(x="Probability", y= expression(frac(Nodes[G],Nodes)))+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(),legend.title = element_blank())
+
+```
+
+```{r}
+
+erdos_renyi_df %>% mutate(giant_comp_percent=giant_compontent_size/nodes) %>%
+ggplot()+
+  geom_point(aes(x=mean_degree,y=giant_comp_percent, color="Mean degree"),show.legend = F)+
+  scale_colour_manual(values = c("Mean degree"="darkorchid2"))+
+  ggtitle("Erdos - Renyi networks")+
+  labs(x="Mean degree", y= expression(frac(Nodes[G],Nodes)))+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(),legend.title = element_blank())
+
+```
+
+```{r, message=FALSE, warning=FALSE}
+ggplot()+
+  geom_point(data = erdos_renyi_df,aes(x=probability,y=average_path), color="salmon1",show.legend = F)+
+  ggtitle("Erdos - Renyi networks")+
+  labs(x="Probability", y= "Average path length")+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank())
+
+```
+
+Do a plot with the average local transitivity.
+
+# Small-world network
+
+Introduced by [@Watts1998]
+
+```{r}
+g <- sample_smallworld(1, 100, 5, 0.05)
+
+```
+
+Lattice, maximum order.
+
+```{r}
+lattice <- make_lattice(length = 100, dim = 1,nei = 2,circular = T)
+
+plot(make_lattice(length = 4, dim = 2,nei = 1,periodic = F),main="Example of lattice which is not circular")
+plot(make_lattice(length = 4, dim = 2,nei = 1,periodic = T),main="Example of lattice which is circular")
+
+```
+
+Algorithm for small-world from Wikipedia
+
+1. Construct a regular ring lattice, a graph with N nodes each connected to K neighbors, K/2 on each side. That is, if the nodes are labeled $n_{0}\ldots n_{{N-1}}$, there is an edge $(n_{i},n_{j})$ if and only if 
+
+$$ 0<|i-j|\ \mathrm {mod} \ \left(N-1-{\frac {K}{2}}\right)\leq {\frac {K}{2}} $$
+
+2. For every node $$n_{i}=n_{0},\dots ,n_{{N-1}}$$ take every edge connecting $$n_{i}$$ to its $$K/2$$ rightmost neighbors, that is every edge 
+$$(n_{i},n_{j}\ \mathrm {mod} \ N)$$ with 
+$$ n_{i}<n_{j}\leq n_{i}+K/2 $$, and rewire it with probability $\beta$. Rewiring is done by replacing
+$$ (n_{i},n_{j}\ \mathrm {mod} \ N)$$ with $$(n_{i},n_{k})$$ where k is chosen uniformly at random from all possible nodes while avoiding self-loops $$(k\neq i)$$ and link duplication (there is no edge $$(n_{i},n_{{k'}})$$ with k'=k at this point in the algorithm).
+
+Degrees of the lattice
+
+```{r}
+igraph::degree(lattice)
+```
+
+Average path length
+```{r}
+igraph::average.path.length(lattice)
+```
+
+Average local transitivity - clustering coefficient
+```{r}
+igraph::transitivity(graph = lattice,type = "average")
+
+```
+
+Comparing to the random network:
+
+```{r}
+random <- sample_gnp(n = vcount(lattice), p = 0.06,directed = F,loops = F)
+igraph::average.path.length(random)
+igraph::transitivity(graph = random,type = "average")
+```
+
+and the small-world network
+
+```{r}
+g <- sample_smallworld(1, 100, 5, 0.05)
+igraph::average.path.length(g)
+igraph::transitivity(graph = g,type = "average")
+```
+
+limitation of small world model : no scale free degree distribution.
+
+```{r}
+g <- sample_smallworld(1, 1000, 5, 0.05)
+tibble(degree=igraph::degree(g)) %>% group_by(degree) %>% summarise(n=n()) %>%
+  ggplot()+
+  geom_point(aes(x=degree,y=n), color="salmon1",show.legend = F)+
+  ggtitle("Small-world network degree distribution")+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank())
+  
+
+```
+
+
+Calculate the measure of small-worldness [@Neal2017]
+
+$$\sigma ={\frac {\frac {C}{C_{r}}}{\frac {L}{L_{r}}}}$$
+
+$$\omega ={\frac {L_{r}}{L}}-{\frac {C}{C_{\ell }}}$$
+
+The concept of complexity [@Strogatz2001a]. 
+
+#### From Regular to Random.
+
+What is the measurment of randomness?
+
+Between Regularity and Randomness is where complexity is emerging.
+
+# The Barabasi-Albert model
+
+```{r}
+g <- sample_pa(1000)
+data_frame(degree=igraph::degree(g)) %>% group_by(degree) %>% summarise(n=n()) %>%
+  ggplot()+
+  geom_point(aes(x=degree,y=n), color="salmon1",show.legend = F)+
+  ggtitle("Barabasi-Albert network degree distribution")+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank())
+
+```
+
+The rich gets richer method, preferencial attachment [@Barabasi1999a]. There are other methods (some and based on natural selection) and distributions that have this scale free structure. The Matthew effect, rich gets richer and poor gets poorer, follows a log distribution.
+
+# Dynamic systems on networks
+
+Very nice tutorial [@Porter2016]
+
+> When studying a dynamical process, one is concerned with its behavior as a function of time, space, and its parameters. There are numerous studies that examine how many people are infected by a biological contagion and whether it persists from one season to another, whether and to what extent interacting oscillators synchronize, whether a meme on the internet becomes viral or not, and more. These studies all have something in common: the dynamics are occurring on a set of discrete entities (the nodes in a network) that are connected to each other via edges in some nontrivial way. This leads to the natural question of how such underlying nontrivial connectivity affects dynamical processes.
+
+> Traditional studies of continuous dynamical systems are concerned with qualitative methods to study coupled ordinary differential equations (ODEs) and/or partial differential equations (PDEs), and traditional studies of discrete dynamical systems take analogous approaches with maps.1 If the state of each node in a network is governed by its own ODE (or PDE or map), then studying a dynamical process on a network entails examining a (typically large) system of coupled ODEs (or PDEs or maps). The change in state of a node depends not only on its own current state but also on the current states of its neighboring nodes, and a network encodes which nodes interact with each other and how strongly they interact.
+
+## Robustness
+
+> Consider a network, and let each of its nodes be either occupied or unoccupied. One can construe occupied nodes as the operational nodes in a network, whereas unoccupied nodes are nonfunctional. We might select nodes uniformly at random and state that they are unoccupied (i.e., are effectively removed from the network) with uniform, independent probability q D 1 􏱁 p 2 Œ0; 1􏱉. This is a so- called “random attack” with an occupation probability of p (and thus an “attack probability” of 1 􏱁 p). Alternatively, we could be devious and perform some kind of “targeted attack” in which we remove (i.e., set as unoccupied) some fraction of nodes preferentially by degree (which is, by far, the most usual case considered), geodesic node betweenness centrality (a measure of how often a node occurs on short paths), location in the network, or some other network diagnostic. In the limit as the number of nodes N ! 1 in one of these processes, what fraction qc of the nodes needs to be removed so that the network no longer has a very large connected component—called a giant connected component (GCC)—of occupied nodes? A percolation transition occurs at the critical occupation probability pc D 1 􏱁 qc that indicates the point of appearance/disappearance of a GCC, which is defined as a connected network component that scales in linear proportion to N as N ! 1. 
+
+
+```{r}
+## function to destroy networks
+
+destroy_net <- function(g,destroy_method) {
+
+destroy_method <- as.character(destroy_method)
+nodes <- vcount(g)
+
+V(g)$name <- rep(x = 1:nodes)
+ destroy_net_df <- data.frame(matrix(ncol = 8,nrow = nodes))
+  colnames(destroy_net_df) <- c("nodes","giant_component_size","nclusters","n_edges","mean_degree","average_clustering","average_path", "iteration")
+
+if (destroy_method=="random") {
+  
+  for(i in 1:(nodes-1)) {
+ 
+  delete_node<- sample(x = V(g)$name,size = 1)
+  
+  clusters_network <- clusters(g)
+
+  destroy_net_df[i,1] <- as.numeric(vcount(g))
+  destroy_net_df[i,2] <- max(clusters_network$csize)
+  destroy_net_df[i,3] <- clusters_network$no
+  destroy_net_df[i,4] <- ecount(g)
+  destroy_net_df[i,5] <- mean(igraph::degree(g))
+  destroy_net_df[i,6] <- igraph::transitivity(g,type = "average")
+  destroy_net_df[i,7] <- average.path.length(g)
+  destroy_net_df[i,8] <- i
+  
+  g <- delete_vertices(graph = g,v = paste0(delete_node))
+  
+
+  }
+  
+} else {
+  
+  for(i in 1:(nodes-1)) {
+ 
+  max_destroy_method_nodes <- as.character(V(g)[degree ==max(V(g)$degree)]$name)
+  
+  clusters_network <- clusters(g)
+  destroy_net_df[i,1] <- as.numeric(vcount(g))
+  destroy_net_df[i,2] <- max(clusters_network$csize)
+  destroy_net_df[i,3] <- clusters_network$no
+  destroy_net_df[i,4] <- ecount(g)
+  destroy_net_df[i,5] <- mean(igraph::degree(g))
+  destroy_net_df[i,6] <- igraph::transitivity(g, type = "average")
+  destroy_net_df[i,7] <- average.path.length(g)
+  destroy_net_df[i,8] <- i
+  
+  if (length(max_destroy_method_nodes)>1) {
+    
+    delete_node<- sample(x = max_destroy_method_nodes,size = 1)
+    g <- delete_vertices(graph = g,v = paste0(delete_node))
+    
+  } else {
+    
+    delete_node<- max_destroy_method_nodes
+    g <- delete_vertices(graph = g,v = paste0(delete_node))
+    
+  }
+
+  
+  }
+  
+  }
+  
+  destroy_net_df
+  
+}
+
+
+
+```
+
+```{r}
+
+# Destroy based on degree and randomly
+g_barabasi <- sample_pa(1000,directed = F)
+V(g_barabasi)$degree <- igraph::degree(g)
+
+
+destroy_barabasi_net_degree <- destroy_net(g_barabasi,"degree") %>% mutate(fraction_removed = (max(nodes,na.rm = T)-nodes)/max(nodes,na.rm = T), fraction_giant_comp=giant_component_size/max(nodes,na.rm = T))
+
+
+destroy_barabasi_net_random <- destroy_net(g_barabasi,"random") %>% mutate(fraction_removed = (max(nodes,na.rm = T)-nodes)/max(nodes,na.rm = T), fraction_giant_comp=giant_component_size/max(nodes,na.rm = T))
+
+# random net
+
+g_random <- sample_gnm(n = vcount(g_barabasi),m = ecount(g_barabasi),directed = F,loops = F)
+V(g_random)$degree <- igraph::degree(g)
+
+
+destroy_random_net_degree <- destroy_net(g_random,"degree") %>% mutate(fraction_removed = (max(nodes,na.rm = T)-nodes)/max(nodes,na.rm = T), fraction_giant_comp=giant_component_size/max(nodes,na.rm = T))
+
+
+destroy_random_net_random <- destroy_net(g_random,"random") %>% mutate(fraction_removed = (max(nodes,na.rm = T)-nodes)/max(nodes,na.rm = T), fraction_giant_comp=giant_component_size/max(nodes,na.rm = T) )
+
+```
+
+```{r, message=FALSE, warning=FALSE}
+ggplot()+
+  geom_point(data = destroy_barabasi_net_degree,aes(x=nodes,y=giant_component_size, color="Barabasi net : degree"),show.legend = T)+
+  geom_point(data = destroy_barabasi_net_random,aes(x=nodes,y=giant_component_size, color="Barabasi net : random"),show.legend = T)+
+  geom_point(data = destroy_random_net_degree,aes(x=nodes,y=giant_component_size, color="ER net : degree"),show.legend = T)+
+  geom_point(data = destroy_random_net_random,aes(x=nodes,y=giant_component_size, color="ER net : random"),show.legend = T)+
+  scale_colour_manual(values = c("Barabasi net : degree"="palegreen2","Barabasi net : random"="darkorange2","ER net : degree"="orangered4","ER net : random"="steelblue3"))+
+  ggtitle("Robustness")+
+  labs(x="nodes", y= "fraction_giant_comp")+
+  theme_bw()+
+  scale_x_reverse()+
+  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(),legend.title = element_blank())
+
+
+```
+
+
+```{r, message=FALSE, warning=FALSE}
+ggplot()+
+  geom_point(data = destroy_barabasi_net_degree,aes(x=fraction_removed,y=fraction_giant_comp, color="destroy_barabasi_net_degree"),show.legend = T)+
+  geom_point(data = destroy_barabasi_net_random,aes(x=fraction_removed,y=fraction_giant_comp, color="destroy_barabasi_net_random"),show.legend = T)+
+  geom_point(data = destroy_random_net_degree,aes(x=fraction_removed,y=fraction_giant_comp, color="destroy_random_net_degree"),show.legend = T)+
+  geom_point(data = destroy_random_net_random,aes(x=fraction_removed,y=fraction_giant_comp, color="destroy_random_net_random"),show.legend = T)+
+  scale_colour_manual(values = c("destroy_barabasi_net_degree"="palegreen2","destroy_barabasi_net_random"="darkorange2","destroy_random_net_degree"="orangered4","destroy_random_net_random"="steelblue3"))+
+  ggtitle("Robustness")+
+  labs(x="Fraction of nodes removed", y= "Fraction of giant component")+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(),legend.title = element_blank())
+
+```
+
+
+Modeling in networks from [@Vespignani2012], [@Barrat2008b]
+
+> The presence of large-scale fluctuations virtually acting at all scales of the network connectivity pattern calls for a mathematical analysis where the variables characterizing each node ofthe network explicitly enter the description of the system. Unfortunately, the general solution, handling the master equation of the system, is hardly, if ever, achievable even for very simple dynamical processes. For this reason, a viable theoretical approach has to be based on techniques such as mean-field and deterministic continuum approximations, which usually provide the understanding of the basic phenomenology and phase diagram of the process under study. In both cases, the heterogeneous nature of the network- connectivity pattern is introduced by aggregating variables accord- ing to a degree-block formalism that assumes that all nodes with the same degree k are statistically equivalent. This assumption allows the grouping ofnodes in degree classes, yielding a convenient representation of the system.
+
 
 
 # References

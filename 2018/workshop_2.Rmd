@@ -8,7 +8,7 @@ output:
     code_folding: hide
     fig_caption: true
 link-citations: yes
-bibliography: Bibliography/Network Science Workshop 2018.bib
+bibliography: ../Bibliography/Network Science Workshop 2018.bib
 ---
 
 ```{r setup, include=FALSE}
@@ -602,7 +602,7 @@ Gene ontology is actually 3 ontologies: Molecular function, Cellular component a
 
 
 From [@Gene2015]
-![GO contents](Images/go contents.png)
+![GO contents](../Images/go contents.png)
 
 
 ```{r}
@@ -645,7 +645,7 @@ Bioconductor has packages in R that do Gene Ontology annotation in genes of many
 ```{r, message=FALSE, warning=FALSE}
 
 # data from Biogrid
-Escherichia_coli_biogrid <- read.delim(file = "Data/BIOGRID-ORGANISM-Escherichia_coli_K12_MG1655-3.5.166.mitab.txt",sep = "\t",header = T) %>% mutate(InteractorA_entrez=gsub("(.*):(.*)","\\2",X.ID.Interactor.A), InteractorB_entrez=gsub("(.*):(.*)","\\2",ID.Interactor.B))
+Escherichia_coli_biogrid <- read.delim(file = "../Data/BIOGRID-ORGANISM-Escherichia_coli_K12_MG1655-3.5.166.mitab.txt",sep = "\t",header = T) %>% mutate(InteractorA_entrez=gsub("(.*):(.*)","\\2",X.ID.Interactor.A), InteractorB_entrez=gsub("(.*):(.*)","\\2",ID.Interactor.B))
 
 Escherichia_coli_biogrid_proteins <- as.character(unique(c(Escherichia_coli_biogrid$InteractorA_entrez,Escherichia_coli_biogrid$InteractorB_entrez))) # gene universe
 
@@ -659,7 +659,7 @@ For homo sapiens
 ```{r}
 
 # data from Biogrid
-homosapiens_biogrid <- read.delim(file = "Data/BIOGRID-ORGANISM-Homo_sapiens-3.5.167.mitab.txt",sep = "\t",header = T) %>% mutate(InteractorA_entrez=gsub("(.*):(.*)","\\2",X.ID.Interactor.A), InteractorB_entrez=gsub("(.*):(.*)","\\2",ID.Interactor.B))
+homosapiens_biogrid <- read.delim(file = "../Data/BIOGRID-ORGANISM-Homo_sapiens-3.5.167.mitab.txt",sep = "\t",header = T) %>% mutate(InteractorA_entrez=gsub("(.*):(.*)","\\2",X.ID.Interactor.A), InteractorB_entrez=gsub("(.*):(.*)","\\2",ID.Interactor.B))
 
 
 ```

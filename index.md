@@ -5,9 +5,9 @@ Network Science in [Bioinformatics MSc Program](https://bioinfo-grad.gr), Univer
 ## BC204 Course of Spring 2025:
 
 ### Material
-[Presentation](2025_network_science_basics_presentation.pdf)
+[Presentation](2025/presentation.pdf)
 
-[Workshop](workshop_network_basics.html)
+[Workshop](2025/workshop_network_basics.html)
 
 ### Wednesday 21/05 11:00-14:00 - 7Α-01
 
@@ -80,9 +80,9 @@ Material created by Dr Christoforos Nikolaou, Group Leader of [CG<sup>2</sup> La
 * mesoscale analysis of networks
 * importance of nodes - centralities
 
-[HTML](workshop_1.html) -- [Rmarkdown file](workshop_1.Rmd)
+[HTML](2018/workshop_1.html) -- [Rmarkdown file](2018/workshop_1.Rmd)
 
-## [Lecture 3](workshop_2.html) : Network construction from Models and Data
+## [Lecture 3](2018/workshop_2.html) : Network construction from Models and Data
 
 * models for network creation (random, scale free, small world)
 * percolation theory - robustness
@@ -92,7 +92,7 @@ Material created by Dr Christoforos Nikolaou, Group Leader of [CG<sup>2</sup> La
 * neural networks vs networks
 * state of the art in network science
 
-[HTML](workshop_2.html) -- [Rmarkdown file](workshop_2.Rmd)
+[HTML](2018/workshop_2.html) -- [Rmarkdown file](2018/workshop_2.Rmd)
 
 ## Presentations {#presentations}
 
