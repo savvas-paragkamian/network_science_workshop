@@ -3,7 +3,7 @@ VERSION := 2026
 ARCHIVE := $(IMAGE)_$(VERSION).tar.gz
 PORT    := 8787
 
-.PHONY: build build-full run save load clean
+.PHONY: build build-full run start stop save load clean
 
 ## Build the lean image for the 2026 course (requires internet — run once)
 build:
@@ -13,9 +13,20 @@ build:
 build-full: build
 	podman build -t $(IMAGE):$(VERSION)-full -f Containerfile.full .
 
-## Run RStudio Server at http://localhost:8787  (user: rstudio  password: network2026)
+## Run RStudio Server in the foreground (Ctrl-C to stop)
 run:
 	podman run --rm -p $(PORT):8787 $(IMAGE):$(VERSION)
+
+## Start RStudio Server in the background → http://localhost:8787  (user: root  password: network2026)
+start:
+	podman run --rm -d --name $(IMAGE) -p $(PORT):8787 $(IMAGE):$(VERSION)
+	@echo "  RStudio Server running at http://localhost:$(PORT)"
+	@echo "  Username: root   Password: network2026"
+	@echo "  Stop with: make stop"
+
+## Stop the background container
+stop:
+	podman stop $(IMAGE)
 
 ## Save lean image to a distributable file (USB stick, local server, etc.)
 save: $(ARCHIVE)

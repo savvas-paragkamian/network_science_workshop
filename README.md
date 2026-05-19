@@ -26,18 +26,21 @@ podman load < network-science-workshop_2026.tar.gz
 docker load < network-science-workshop_2026.tar.gz
 ```
 
-### 2. Run RStudio Server
+### 2. Start RStudio Server
 
 ```bash
-make run
+make start          # runs in background
+make stop           # stop when done
 ```
 
 or without Make:
 
 ```bash
-podman run --rm -p 8787:8787 network-science-workshop:2026
+podman run --rm -d --name network-science-workshop -p 8787:8787 network-science-workshop:2026
+podman stop network-science-workshop
 # Windows / Docker:
-docker run --rm -p 8787:8787 network-science-workshop:2026
+docker run --rm -d --name network-science-workshop -p 8787:8787 network-science-workshop:2026
+docker stop network-science-workshop
 ```
 
 ### 3. Open in your browser
