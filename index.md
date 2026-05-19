@@ -2,6 +2,55 @@
 
 Network Science in [Bioinformatics MSc Program](https://bioinfo-grad.gr), University of Crete
 
+## BC204 Course of Spring 2026:
+
+### Material
+
+[Workshop](2026/workshop_network_science_2026.html)
+
+### Wednesday 20/05 13:00–17:00
+
+#### Part 0 · Data Structures and Complexity Theory
+
+* data structures in R and networks (matrices, edge lists, adjacency)
+* complicated vs complex systems
+* logistic map, deterministic chaos, Turing reaction-diffusion
+* reductionism, holism, emergence — where network science fits
+
+#### Part 1 · Graph Models
+
+* Erdős–Rényi random graphs, phase transition
+* Barabási–Albert scale-free networks
+* Watts–Strogatz small-world networks
+
+#### Part 2 · *C. elegans* Connectome
+
+* degree distribution and power-law fitting
+* centralities: degree, betweenness, PageRank
+* spatial layout of the frontal connectome
+
+#### *(45-minute break)*
+
+#### Part 3 · Community Detection
+
+* Leiden algorithm
+* resolution sensitivity
+* assortativity
+
+#### Part 4 · *E. coli* PPI and Robustness
+
+* BioGRID protein–protein interactions
+* random vs targeted attack robustness
+* network inference from correlation thresholds
+
+#### Part 5 · Networks as Computation
+
+* message passing on the *C. elegans* network
+* graph neural networks and AlphaFold
+* open data and reproducibility (MIxS, Turing Way)
+
+---
+
 ## BC204 Course of Spring 2025:
 
 ### Material
