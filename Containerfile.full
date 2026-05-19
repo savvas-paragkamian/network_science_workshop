@@ -16,9 +16,9 @@ RUN Rscript -e "BiocManager::install( \
 
 # Add the remaining data files used only in 2018/workshop_2.Rmd
 COPY --chown=rstudio:rstudio Data/BIOGRID-ORGANISM-Escherichia_coli_K12_MG1655-3.5.166.mitab.txt \
-                              /home/rstudio/workshop/Data/
+                              /home/rstudio/Data/
 COPY --chown=rstudio:rstudio Data/NeuronConnect.xls \
                               Data/NeuronType.xls \
-                              /home/rstudio/workshop/Data/
-COPY --chown=rstudio:rstudio 2018/ /home/rstudio/workshop/2018/
-COPY --chown=rstudio:rstudio 2025/ /home/rstudio/workshop/2025/
+                              /home/rstudio/Data/
+COPY --chown=rstudio:rstudio 2018/ /home/rstudio/2018/
+COPY --chown=rstudio:rstudio 2025/ /home/rstudio/2025/

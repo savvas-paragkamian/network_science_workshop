@@ -25,16 +25,19 @@ RUN Rscript -e "install.packages( \
 
 # Only the data files the 2026 workshop actually reads
 COPY --chown=rstudio:rstudio Data/BIOGRID-ORGANISM-Escherichia_coli_K12_W3110-3.5.165.mitab.txt \
-                              /home/rstudio/workshop/Data/
+                              /home/rstudio/Data/
 COPY --chown=rstudio:rstudio Data/C-elegans-frontal.txt \
                               Data/C-elegans-frontal-meta.csv \
-                              /home/rstudio/workshop/Data/
-COPY --chown=rstudio:rstudio Bibliography/ /home/rstudio/workshop/Bibliography/
-COPY --chown=rstudio:rstudio Images/       /home/rstudio/workshop/Images/
-COPY --chown=rstudio:rstudio 2026/         /home/rstudio/workshop/2026/
+                              /home/rstudio/Data/
+COPY --chown=rstudio:rstudio Bibliography/ /home/rstudio/Bibliography/
+COPY --chown=rstudio:rstudio Images/       /home/rstudio/Images/
+COPY --chown=rstudio:rstudio 2026/         /home/rstudio/2026/
+
+RUN echo 'session-default-working-dir=/home/rstudio' >> /etc/rstudio/rsession.conf
 
 ENV PASSWORD=network2026 \
-    ROOT=false
+    ROOT=false \
+    HOME=/home/rstudio
 
-WORKDIR /home/rstudio/workshop
+WORKDIR /home/rstudio
 EXPOSE 8787
