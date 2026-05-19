@@ -96,11 +96,20 @@ cd network_science_workshop
 
 ---
 
-## Quick start — students (offline, pre-built image)
+## Quick start — students
 
-Students receive a pre-built image archive (`network-science-workshop_2026.tar.gz`) on a USB stick or local server. No internet is needed after that.
+### Option A — Pull from Docker Hub (requires internet, ~1 GB)
 
-### 1. Load the image
+```bash
+podman pull savvasparagkamian/network-science-workshop:2026
+# or: docker pull savvasparagkamian/network-science-workshop:2026
+```
+
+Then jump to [Start RStudio Server](#2-start-rstudio-server) below.
+
+### Option B — Load from archive (offline, USB stick or local server)
+
+Receive `network-science-workshop_2026.tar.gz` from your instructor, then:
 
 ```bash
 make load

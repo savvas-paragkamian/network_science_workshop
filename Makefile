@@ -2,6 +2,7 @@ IMAGE    := network-science-workshop
 VERSION  := 2026
 ARCHIVE  := $(IMAGE)_$(VERSION).tar.gz
 PORT     := 8787
+HUB_USER := savvasparagkamian
 # rocker/tidyverse only publishes linux/amd64 for this tag.
 # Pinning the platform here ensures the build works from any host architecture
 # (Apple Silicon M1/M2, x86_64, etc.) and produces an image that runs natively
@@ -48,6 +49,12 @@ $(ARCHIVE):
 ## Load a pre-built image — students use this, not 'build'
 load:
 	podman load < $(ARCHIVE)
+
+## Push to Docker Hub — requires: podman login docker.io
+push:
+	podman tag $(IMAGE):$(VERSION) $(HUB_USER)/$(IMAGE):$(VERSION)
+	podman push $(HUB_USER)/$(IMAGE):$(VERSION)
+	@echo "  Image available at: docker.io/$(HUB_USER)/$(IMAGE):$(VERSION)"
 
 clean:
 	rm -f $(ARCHIVE)
