@@ -14,9 +14,6 @@ format:
     number-sections: true
     fig-width: 8
     fig-height: 5
-  pdf:
-    toc: true
-    number-sections: true
 execute:
   warning: false
   message: false
@@ -352,10 +349,9 @@ Neuron positions are anatomical (inferred from EM data), so this layout is biolo
 #| label: spatial-plot
 #| fig-cap: "C. elegans frontal connectome in anatomical space"
 
-tidy_net <- as_tbl_graph(giant) |>
-  left_join(meta, by = c("name" = "node_id"))
+tidy_net <- as_tbl_graph(giant)
 
-ggraph(tidy_net, x = x, y = y) +
+ggraph(tidy_net, layout = "manual", x = x, y = y) +
   geom_edge_link(alpha = 0.2, edge_width = 0.3,
                  arrow     = arrow(length = unit(2, "mm"), type = "closed"),
                  end_cap   = circle(2, "mm")) +
@@ -478,7 +474,7 @@ cat("Communities detected (resolution = 0.5):", n_comm, "\n")
 #| label: spatial-communities
 #| fig-cap: "Community membership mapped onto anatomical positions — do communities cluster spatially?"
 
-ggraph(tidy_ud, x = x, y = y) +
+ggraph(tidy_ud, layout = "manual", x = x, y = y) +
   geom_edge_link(alpha = 0.12, edge_width = 0.3) +
   geom_node_point(aes(colour = community), size = 3) +
   labs(title  = "C. elegans communities (Leiden, resolution = 0.5)",
