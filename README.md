@@ -6,9 +6,41 @@ Hands-on R workshops covering graph models, network topology, community detectio
 
 ---
 
-## Prerequisites
+## Repository structure
 
-You need **Git** and either **Podman** or **Docker**. Pick the row that matches your OS.
+```
+2018/               Fall 2018 course (R Markdown, igraph 1.x)
+2025/               Spring 2025 course (R Markdown, igraph 2.x)
+2026/               Spring 2026 course (Quarto, igraph 2.x, Leiden)
+Data/               Shared datasets (BioGRID, C. elegans connectome)
+Bibliography/       Shared .bib file
+Images/             Shared figures
+renv.lock           Pinned R package versions (for non-container use)
+Containerfile       Lean OCI image — 2026 course (igraph + poweRlaw on rocker/tidyverse)
+Containerfile.full  Extended image — adds Bioconductor for 2018 GO section
+Makefile            One-word commands: build, start, stop, save, load
+compose.yml         Instructor live-editing workflow (repo mounted into container)
+container/          apptainer.def for HPC / server use
+.devcontainer/      GitHub Codespaces (Windows fallback)
+```
+
+---
+
+## Choose your setup
+
+| Situation | Recommended path |
+|-----------|-----------------|
+| Student, workshop day, USB stick | [Load image from archive](#option-b----load-from-archive-offline) |
+| Student, internet available | [Pull from Docker Hub](#option-a----pull-from-docker-hub-requires-internet) |
+| No Docker/Podman (QEMU issues, etc.) | [renv — plain R install](#option-c----no-container-renv) |
+| Instructor preparing or editing content | [Instructor workflow](#instructor--developer-workflow) |
+| HPC or shared server | [Apptainer / Singularity](#hpc--server-apptainer--singularity) |
+
+All container paths require **Git** and **Podman** or **Docker**. The renv path requires only **R ≥ 4.3** and **Quarto**.
+
+---
+
+## Prerequisites
 
 ### Linux
 
@@ -48,27 +80,27 @@ sudo pacman -S git podman podman-compose
 
 ### macOS
 
-> **Apple Silicon (M1/M2/M3):** The workshop image is built for `linux/amd64` because the base image (`rocker/tidyverse`) does not publish an `arm64` variant. **Docker Desktop** is the recommended choice on Apple Silicon — it uses Rosetta 2 to run `amd64` images natively and transparently, with no extra configuration. Podman works too but requires QEMU emulation (slower).
+The Containerfile detects the CPU architecture at build time and installs the matching Quarto binary, so both **Intel** and **Apple Silicon** builds work natively.
 
-**Docker Desktop (recommended on Apple Silicon):**
+**Docker Desktop (recommended):**
 
-Install [Docker Desktop for Mac](https://www.docker.com/products/docker-desktop/). It includes `docker compose` and handles `amd64` emulation via Rosetta 2 automatically.
+Install [Docker Desktop for Mac](https://www.docker.com/products/docker-desktop/). It includes `docker compose` and handles cross-architecture images automatically.
 
-**Podman (Intel Mac or if you prefer Podman):**
+**Podman:**
 
 ```bash
 brew install git podman podman-compose
 ```
 
-Podman on macOS runs inside a lightweight Linux VM. Initialise it once:
+Initialise the Podman VM once:
 
 ```bash
-podman machine init          # download and configure the VM (~700 MB, once only)
-podman machine start         # start the VM (run this after every reboot)
-podman machine stop          # stop when not in use
+podman machine init    # download and configure the VM (~700 MB, once only)
+podman machine start   # start the VM (run after every reboot)
+podman machine stop    # stop when not in use
 ```
 
-On Apple Silicon with Podman, QEMU must be available in the VM for `linux/amd64` emulation. If the build fails with an architecture error, switch to Docker Desktop.
+> If Podman fails with a QEMU / architecture error, use Docker Desktop or the [renv path](#option-c----no-container-renv) instead.
 
 ### Windows
 
@@ -98,7 +130,7 @@ cd network_science_workshop
 
 ## Quick start — students
 
-### Option A — Pull from Docker Hub (requires internet, ~1 GB)
+### Option A — Pull from Docker Hub (requires internet)
 
 ```bash
 podman pull savvasparagkamian/network-science-workshop:2026
@@ -107,7 +139,7 @@ podman pull savvasparagkamian/network-science-workshop:2026
 
 Then jump to [Start RStudio Server](#2-start-rstudio-server) below.
 
-### Option B — Load from archive (offline, USB stick or local server)
+### Option B — Load from archive (offline)
 
 Receive `network-science-workshop_2026.tar.gz` from your instructor, then:
 
@@ -130,7 +162,7 @@ docker load < network-science-workshop_2026.tar.gz
 ### 2. Start RStudio Server
 
 ```bash
-make start          # background; prints the URL
+make start          # runs in background; prints the URL
 make stop           # stop when done
 ```
 
@@ -161,7 +193,29 @@ Go to **http://localhost:8787**
 
 > **Podman note:** Podman is rootless, so the effective user inside the container is `root`. Use `root` as the username if `rstudio` is rejected.
 
-All workshop notebooks and data are already inside the image — no internet needed.
+All workshop notebooks and data are already inside the image — no internet needed at runtime.
+
+---
+
+## Option C — No container (renv)
+
+If Docker/Podman is unavailable (QEMU issues, corporate firewall, no admin rights), install the packages directly into your local R.
+
+**Requirements:** R ≥ 4.3, [Quarto CLI](https://quarto.org/docs/get-started/).
+
+```r
+# In R — installs all pinned dependencies from renv.lock
+install.packages("renv")
+renv::restore(lockfile = "renv.lock", prompt = FALSE)
+```
+
+Then render the workshop notebook from the terminal:
+
+```bash
+quarto render 2026/workshop_network_science_2026.qmd
+```
+
+Or open the `.qmd` in RStudio and click **Render**.
 
 ---
 
@@ -198,7 +252,7 @@ docker compose up          # Docker
 
 The `compose.yml` mounts the entire repository at `/home/rstudio/workshop` inside the container. Any file you save in your editor on the host appears instantly in RStudio.
 
-> **SELinux (Fedora / RHEL):** The volume in `compose.yml` is annotated with `:z` for SELinux relabelling. This is correct on Fedora/RHEL and harmless elsewhere; do not remove it on those systems.
+> **SELinux (Fedora / RHEL):** The volume in `compose.yml` is annotated with `:z` for SELinux relabelling. This is correct on Fedora/RHEL and harmless elsewhere.
 
 > **macOS / Windows:** If Compose reports a bind-mount permission error, ensure the Podman VM or Docker Desktop has access to your home directory (Docker Desktop → Settings → Resources → File Sharing).
 
@@ -242,7 +296,7 @@ Click the green **▶ Run** triangle at the top-right of any chunk to run it ind
 
 **Render the full document to HTML:**
 
-Click the **Render** button in the editor toolbar (or use the keyboard shortcut `Ctrl+Shift+K` · `Cmd+Shift+K`).
+Click the **Render** button in the editor toolbar (or `Ctrl+Shift+K` · `Cmd+Shift+K`).
 
 Alternatively, in the RStudio **Terminal** tab:
 
@@ -250,11 +304,7 @@ Alternatively, in the RStudio **Terminal** tab:
 quarto render workshop/2026/workshop_network_science_2026.qmd
 ```
 
-The output file `workshop_network_science_2026.html` is written to `2026/` — because the repo is mounted, the rendered HTML appears on your host at `2026/workshop_network_science_2026.html` immediately.
-
-**Edit and save:**
-
-Edit `.qmd` source files in RStudio or in your host editor — both see the same files. Re-render or re-run chunks to see changes.
+The output `workshop_network_science_2026.html` is written to `2026/` — because the repo is mounted, the rendered HTML appears on your host immediately.
 
 ### 5. Stop
 
@@ -305,25 +355,8 @@ Open **http://localhost:8787** — username `root`, password `network2026`.
 
 ---
 
-## Repository layout
-
-```
-2018/               Fall 2018 course (R Markdown, igraph 1.x)
-2025/               Spring 2025 course (R Markdown, igraph 2.x)
-2026/               Spring 2026 course (Quarto, igraph 2.x, Leiden)
-Data/               Shared datasets (BioGRID, C. elegans connectome)
-Bibliography/       Shared .bib file
-Images/             Shared figures
-Containerfile       Lean OCI image (2026 course only)
-Containerfile.full  Extended image (adds Bioconductor for 2018 GO section)
-Makefile            One-word commands: build, start, stop, save, load
-compose.yml         Instructor live-editing workflow
-container/          apptainer.def for HPC/server use
-.devcontainer/      GitHub Codespaces (Windows fallback)
-```
-
 ## Packages
 
-**CRAN:** `igraph`, `ggraph`, `tidygraph`, `poweRlaw`
+**2026 workshop** (`Containerfile`, `renv.lock`): `igraph`, `poweRlaw` — plus `ggplot2`, `dplyr`, `tidyr`, `tibble`, `purrr`, `knitr` which are pre-installed in the `rocker/tidyverse` base image. Network visualisations use base `plot.igraph()` — no `ggraph` or `tidygraph` required.
 
 **Bioconductor** (2018 GO section, `Containerfile.full` only): `AnnotationDbi`, `GO.db`, `topGO`, `Rgraphviz`, `GSEABase`, `org.EcK12.eg.db`
