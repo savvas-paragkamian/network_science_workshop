@@ -25,15 +25,17 @@ bibliography: ../Bibliography/Network Science Workshop 2018.bib
 #| label: setup
 #| code-fold: true
 
-required <- c("igraph", "ggraph", "tidygraph", "poweRlaw", "tidyverse", "knitr")
+required <- c("igraph", "poweRlaw", "ggplot2", "dplyr", "tidyr", "tibble", "purrr")
 missing  <- required[!required %in% installed.packages()[, "Package"]]
 if (length(missing)) install.packages(missing, repos = "https://cloud.r-project.org")
 
 library(igraph)
-library(ggraph)
-library(tidygraph)
 library(poweRlaw)
-library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(tibble)
+library(purrr)
 library(knitr)
 
 theme_net <- function() {
@@ -378,7 +380,8 @@ Visualise the same matrix as a heatmap — useful for spotting asymmetry (direct
 as.data.frame(adj) |>
   rownames_to_column("from") |>
   pivot_longer(-from, names_to = "to", values_to = "edge") |>
-  ggplot(aes(x = to, y = fct_rev(from), fill = factor(edge))) +
+  mutate(from = factor(from, levels = rev(sort(unique(from))))) |>
+  ggplot(aes(x = to, y = from, fill = factor(edge))) +
   geom_tile(colour = "white") +
   scale_fill_manual(values = c("0" = "grey92", "1" = "steelblue"),
                     labels = c("absent", "present")) +
@@ -454,23 +457,18 @@ Three representations are used across this workshop:
 
 | Object | Package | When to use |
 |---|---|---|
-| `igraph` | igraph | Most analyses — fast C backend |
-| `tbl_graph` | tidygraph | When you need `dplyr`/`ggraph` pipelines |
-| `matrix` / `tibble` | base / tidyverse | Raw import and pre-processing |
+| `igraph` | igraph | All network analysis — fast C backend |
+| `matrix` / `tibble` | base / tidyverse | Raw import, pre-processing, and statistics |
 
 For a practical guide to network analysis in R see @Luke2015; for the statistical foundations see @Kolaczyk2009a.
 
 ```{r}
 #| label: r-objects
 
-# igraph object
+# igraph object — the primary representation used throughout this workshop
 g_ig <- graph_from_data_frame(el_w, directed = TRUE)
 
-# tbl_graph — wraps igraph, activates nodes or edges as a tibble
-g_tbl <- as_tbl_graph(g_ig)
-
-# inspect
-g_tbl
+g_ig
 ```
 
 > **Exercise 0**: Make the toy graph undirected (`as.undirected(g_ig)`). Check again: is the adjacency matrix now symmetric? Does the edge count change, and why?
@@ -580,13 +578,10 @@ Every network analysis should start with this checklist before computing anythin
 ```{r}
 #| label: celegans-import
 
-edges <- read_delim("../Data/C-elegans-frontal.txt", delim = " ",
-                    col_types = "cci",
-                    show_col_types = FALSE) |>
+edges <- read.table("../Data/C-elegans-frontal.txt", header = TRUE, sep = " ") |>
   mutate(across(c(FromNodeId, ToNodeId), as.character))
 
-meta  <- read_csv("../Data/C-elegans-frontal-meta.csv",
-                  col_types = cols(), show_col_types = FALSE) |>
+meta  <- read.csv("../Data/C-elegans-frontal-meta.csv") |>
   rename(x = posx, y = posy) |>
   mutate(node_id = as.character(node_id))
 
@@ -617,15 +612,16 @@ Neuron positions are anatomical (inferred from EM data), so this layout is biolo
 #| label: spatial-plot
 #| fig-cap: "C. elegans frontal connectome in anatomical space"
 
-tidy_net <- as_tbl_graph(giant)
+layout_anat <- cbind(V(giant)$x, V(giant)$y)
 
-ggraph(tidy_net, layout = "manual", x = x, y = y) +
-  geom_edge_link(alpha = 0.2, edge_width = 0.3,
-                 arrow     = arrow(length = unit(2, "mm"), type = "closed"),
-                 end_cap   = circle(2, "mm")) +
-  geom_node_point(size = 2, colour = "steelblue") +
-  labs(title = "C. elegans frontal connectome — anatomical layout") +
-  theme_void()
+plot(giant,
+     layout          = layout_anat,
+     vertex.size     = 3,
+     vertex.color    = "steelblue",
+     vertex.label    = NA,
+     edge.arrow.size = 0.2,
+     edge.color      = adjustcolor("grey50", alpha.f = 0.25),
+     main = "C. elegans frontal connectome — anatomical layout")
 ```
 
 ## Degree distribution and power-law test
@@ -673,18 +669,15 @@ ggplot(ccdf_df, aes(x = k, y = p)) +
 ```{r}
 #| label: centralities
 
-tidy_net <- tidy_net |>
-  activate(nodes) |>
+node_tbl <- igraph::as_data_frame(giant, what = "vertices") |>
   mutate(
-    degree      = centrality_degree(mode = "total"),
-    degree_in   = centrality_degree(mode = "in"),
-    degree_out  = centrality_degree(mode = "out"),
-    betweenness = centrality_betweenness(directed = TRUE),
-    closeness   = centrality_closeness(mode = "all"),
-    pagerank    = centrality_pagerank()
+    degree      = degree(giant, mode = "total"),
+    degree_in   = degree(giant, mode = "in"),
+    degree_out  = degree(giant, mode = "out"),
+    betweenness = betweenness(giant, directed = TRUE),
+    closeness   = closeness(giant, mode = "all"),
+    pagerank    = page_rank(giant)$vector
   )
-
-node_tbl <- tidy_net |> activate(nodes) |> as_tibble()
 ```
 
 Degree measures local connectivity. Betweenness measures how often a neuron lies on the shortest path between other pairs — a bottleneck [@Freeman1979b; @Freeman1991c]. PageRank propagates influence through the directed structure. For a systematic treatment of centrality axioms see @Boldi2014a; for an overview of applications see @Lu2016a. In neural networks specifically, centrality measures have been used to identify functionally critical regions [@Bullmore2009; @Rubinov2010b].
@@ -735,12 +728,11 @@ Leiden [@Traag2019] solves a resolution-limit problem in Louvain: it guarantees 
 #| label: leiden-communities
 
 # Leiden requires an undirected simple graph
-tidy_ud <- tidy_net |>
-  convert(to_undirected) |>
-  convert(to_simple) |>
-  mutate(community = as.factor(group_leiden(resolution = 0.5)))
+g_ud      <- as.undirected(giant) |> simplify()
+comm_leid <- cluster_leiden(g_ud, resolution_parameter = 0.5)
+V(g_ud)$community <- as.character(membership(comm_leid))
 
-n_comm <- tidy_ud |> activate(nodes) |> pull(community) |> n_distinct()
+n_comm <- max(membership(comm_leid))
 cat("Communities detected (resolution = 0.5):", n_comm, "\n")
 ```
 
@@ -748,25 +740,30 @@ cat("Communities detected (resolution = 0.5):", n_comm, "\n")
 #| label: spatial-communities
 #| fig-cap: "Community membership mapped onto anatomical positions — do communities cluster spatially?"
 
-ggraph(tidy_ud, layout = "manual", x = x, y = y) +
-  geom_edge_link(alpha = 0.12, edge_width = 0.3) +
-  geom_node_point(aes(colour = community), size = 3) +
-  labs(title  = "C. elegans communities (Leiden, resolution = 0.5)",
-       colour = "Community") +
-  theme_void() +
-  theme(legend.position = "bottom")
+comm_pal       <- hcl.colors(n_comm, palette = "Dark 2")
+layout_anat_ud <- cbind(V(g_ud)$x, V(g_ud)$y)
+
+plot(g_ud,
+     layout       = layout_anat_ud,
+     vertex.size  = 4,
+     vertex.color = comm_pal[as.integer(V(g_ud)$community)],
+     vertex.label = NA,
+     edge.color   = adjustcolor("grey70", alpha.f = 0.12),
+     main = "C. elegans communities (Leiden, resolution = 0.5)")
 ```
 
 ```{r}
 #| label: kk-communities
 #| fig-cap: "Force-directed layout reveals intra-community density regardless of anatomy"
 
-ggraph(tidy_ud, layout = "kk") +
-  geom_edge_link(alpha = 0.12, edge_width = 0.3) +
-  geom_node_point(aes(colour = community), size = 3) +
-  labs(title = "C. elegans communities (force-directed layout)") +
-  theme_void() +
-  theme(legend.position = "bottom")
+set.seed(42)
+plot(g_ud,
+     layout       = layout_with_kk(g_ud),
+     vertex.size  = 4,
+     vertex.color = comm_pal[as.integer(V(g_ud)$community)],
+     vertex.label = NA,
+     edge.color   = adjustcolor("grey70", alpha.f = 0.12),
+     main = "C. elegans communities (Kamada-Kawai layout)")
 ```
 
 ## Resolution sensitivity
@@ -780,11 +777,7 @@ The `resolution` parameter controls granularity: higher values split communities
 resolutions <- seq(0.1, 2.5, by = 0.1)
 
 res_df <- map_dfr(resolutions, function(r) {
-  n <- tidy_ud |>
-    mutate(community = group_leiden(resolution = r)) |>
-    activate(nodes) |>
-    pull(community) |>
-    n_distinct()
+  n <- max(membership(cluster_leiden(g_ud, resolution_parameter = r)))
   tibble(resolution = r, n_communities = n)
 })
 
@@ -984,17 +977,18 @@ The first difference from biological networks is topological. A **multi-layer pe
 layer_sizes <- c(input = 4, hidden1 = 6, hidden2 = 6, output = 2)
 layer_names <- names(layer_sizes)
 
-nodes_mlp <- imap_dfr(layer_sizes, function(n, lname) {
-  tibble(layer = lname,
-         layer_idx  = which(names(layer_sizes) == lname),
-         neuron_idx = seq_len(n),
-         name       = paste0(lname, "_", seq_len(n)))
+nodes_mlp <- map_dfr(seq_along(layer_sizes), function(i) {
+  tibble(layer      = layer_names[i],
+         layer_idx  = i,
+         neuron_idx = seq_len(layer_sizes[i]),
+         name       = paste0(layer_names[i], "_", seq_len(layer_sizes[i])))
 }) |> mutate(x = layer_idx,
              y = neuron_idx - (layer_sizes[layer] + 1) / 2)
 
 edges_mlp <- map_dfr(seq_len(length(layer_sizes) - 1), function(i) {
-  crossing(from = nodes_mlp$name[nodes_mlp$layer == layer_names[i]],
-           to   = nodes_mlp$name[nodes_mlp$layer == layer_names[i + 1]])
+  expand.grid(from = nodes_mlp$name[nodes_mlp$layer == layer_names[i]],
+              to   = nodes_mlp$name[nodes_mlp$layer == layer_names[i + 1]],
+              stringsAsFactors = FALSE)
 })
 
 g_mlp <- graph_from_data_frame(edges_mlp,
@@ -1005,18 +999,20 @@ g_mlp <- graph_from_data_frame(edges_mlp,
 #| label: mlp-plot
 #| fig-cap: "MLP as a directed graph. Every neuron in one layer connects to every neuron in the next — fully connected, no hubs, no shortcuts."
 
-as_tbl_graph(g_mlp) |>
-  activate(nodes) |>
-  mutate(layer = factor(layer, levels = layer_names)) |>
-  ggraph(layout = "manual", x = x, y = y) +
-  geom_edge_link(alpha = 0.2, edge_width = 0.4,
-                 arrow = arrow(length = unit(2, "mm"), type = "closed"),
-                 end_cap = circle(3, "mm")) +
-  geom_node_point(aes(colour = layer), size = 6) +
-  geom_node_text(aes(label = neuron_idx), size = 3, colour = "white") +
-  scale_colour_brewer(palette = "Set2") +
-  labs(title = "Multi-layer perceptron", colour = "Layer") +
-  theme_void()
+layer_pal <- hcl.colors(length(layer_sizes), palette = "Dark 2")
+layer_idx <- match(V(g_mlp)$layer, layer_names)
+
+plot(g_mlp,
+     layout             = as.matrix(select(nodes_mlp, x, y)),
+     vertex.color       = layer_pal[layer_idx],
+     vertex.size        = 20,
+     vertex.label       = V(g_mlp)$neuron_idx,
+     vertex.label.color = "white",
+     vertex.label.cex   = 0.8,
+     edge.arrow.size    = 0.3,
+     edge.color         = adjustcolor("grey50", alpha.f = 0.3),
+     main = "Multi-layer perceptron")
+legend("topright", legend = layer_names, fill = layer_pal, title = "Layer", cex = 0.8)
 ```
 
 The degree distribution makes the structural contrast with biological networks immediate:
@@ -1125,7 +1121,7 @@ tribble(
   "Other AI",       51,          "AI",
   "Non-AI",         58,          "Other"
 ) |>
-  mutate(Company = fct_reorder(Company, Billion_USD)) |>
+  mutate(Company = reorder(Company, Billion_USD)) |>
   ggplot(aes(x = Company, y = Billion_USD, fill = Category)) +
   geom_col() +
   geom_text(aes(label = paste0("$", Billion_USD, "B")),
