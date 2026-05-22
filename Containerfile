@@ -12,19 +12,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         git \
     && rm -rf /var/lib/apt/lists/*
 
-# Quarto is in rocker/verse but not tidyverse; install the CLI directly
-RUN curl -fsSL https://quarto.org/download/latest/quarto-linux-amd64.deb -o /tmp/quarto.deb \
+# Quarto — detect arch so the same Containerfile builds on amd64 and arm64
+RUN ARCH=$(dpkg --print-architecture) \
+    && curl -fsSL "https://quarto.org/download/latest/quarto-linux-${ARCH}.deb" -o /tmp/quarto.deb \
     && dpkg -i /tmp/quarto.deb \
     && rm /tmp/quarto.deb
 
-# renv for reproducible package installation
-RUN Rscript -e "install.packages('renv', repos='https://cloud.r-project.org', quiet=TRUE)"
-
-COPY renv.lock /home/rstudio/renv.lock
-
-# Install all workshop packages from the lockfile into the system library
-ENV RENV_PATHS_LIBRARY=/usr/local/lib/R/site-library
-RUN Rscript -e "renv::restore(lockfile='/home/rstudio/renv.lock', library='/usr/local/lib/R/site-library', prompt=FALSE)"
+# rocker/tidyverse already has ggplot2, dplyr, tidyr, tibble, purrr, knitr.
+# Only add the two packages the 2026 workshop needs beyond that.
+RUN Rscript -e "install.packages( \
+    c('igraph', 'poweRlaw'), \
+    repos = 'https://cloud.r-project.org', \
+    Ncpus = parallel::detectCores())"
 
 # Only the data files the 2026 workshop actually reads
 COPY --chown=rstudio:rstudio Data/BIOGRID-ORGANISM-Escherichia_coli_K12_W3110-3.5.165.mitab.txt \
