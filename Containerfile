@@ -17,11 +17,14 @@ RUN curl -fsSL https://quarto.org/download/latest/quarto-linux-amd64.deb -o /tmp
     && dpkg -i /tmp/quarto.deb \
     && rm /tmp/quarto.deb
 
-# CRAN packages not in rocker/tidyverse
-RUN Rscript -e "install.packages( \
-    c('igraph', 'ggraph', 'tidygraph', 'poweRlaw'), \
-    repos = 'https://cloud.r-project.org', \
-    Ncpus = parallel::detectCores())"
+# renv for reproducible package installation
+RUN Rscript -e "install.packages('renv', repos='https://cloud.r-project.org', quiet=TRUE)"
+
+COPY renv.lock /home/rstudio/renv.lock
+
+# Install all workshop packages from the lockfile into the system library
+ENV RENV_PATHS_LIBRARY=/usr/local/lib/R/site-library
+RUN Rscript -e "renv::restore(lockfile='/home/rstudio/renv.lock', library='/usr/local/lib/R/site-library', prompt=FALSE)"
 
 # Only the data files the 2026 workshop actually reads
 COPY --chown=rstudio:rstudio Data/BIOGRID-ORGANISM-Escherichia_coli_K12_W3110-3.5.165.mitab.txt \
